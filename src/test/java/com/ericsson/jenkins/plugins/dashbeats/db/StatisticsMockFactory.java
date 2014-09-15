@@ -32,6 +32,7 @@ import com.sonyericsson.jenkins.plugins.bfa.statistics.FailureCauseStatistics;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
+import hudson.model.Result;
 import org.mockito.Mockito;
 
 import java.util.*;
@@ -60,7 +61,7 @@ public class StatisticsMockFactory {
         long duration = 100000;
         List<String> triggerCauses = new LinkedList<String>();
         for (Object o : createFoundCauses()) {
-            triggerCauses.add("TestIdCause");
+            triggerCauses.add("userIdCause");
         }
         String nodeName = "nodeName";
         int timeZoneOffset = TimeZone.getDefault().getRawOffset();
@@ -86,30 +87,30 @@ public class StatisticsMockFactory {
     public List<Statistics> createStatisticsBatch() throws Exception {
         List<Statistics> list = new ArrayList<Statistics>();
         StatisticsMockFactory factory = new StatisticsMockFactory();
-        Statistics statA1 = factory.createStatistics(new Date(), "jobTestA", 1, "SUCCESS");
-        Statistics statA2 = factory.createStatistics(new Date(), "jobTestA", 2, "FAILED");
-        Statistics statA3 = factory.createStatistics(new Date(), "jobTestA", 3, "ABORTED");
-        Statistics statA4 = factory.createStatistics(new Date(), "jobTestA", 4, "UNSTABLE");
-        Statistics statB1 = factory.createStatistics(new Date(), "jobTestB", 1, "SUCCESS");
-        Statistics statB2 = factory.createStatistics(new Date(), "jobTestB", 2, "FAILED");
-        Statistics statB3 = factory.createStatistics(new Date(), "jobTestB", 3, "ABORTED");
-        Statistics statB4 = factory.createStatistics(new Date(), "jobTestB", 4, "UNSTABLE");
-        Statistics statC1 = factory.createStatistics(new Date(), "jobTestC", 1, "SUCCESS");
-        Statistics statC2 = factory.createStatistics(new Date(), "jobTestC", 2, "FAILED");
-        Statistics statC3 = factory.createStatistics(new Date(), "jobTestC", 3, "ABORTED");
-        Statistics statC4 = factory.createStatistics(new Date(), "jobTestC", 4, "UNSTABLE");
-        Statistics statD1 = factory.createStatistics(new Date(), "jobTestD", 1, "SUCCESS");
-        Statistics statD2 = factory.createStatistics(new Date(), "jobTestD", 2, "FAILED");
-        Statistics statD3 = factory.createStatistics(new Date(), "jobTestD", 3, "ABORTED");
-        Statistics statD4 = factory.createStatistics(new Date(), "jobTestD", 4, "UNSTABLE");
-        Statistics statE1 = factory.createStatistics(new Date(), "jobTestE", 1, "SUCCESS");
-        Statistics statE2 = factory.createStatistics(new Date(), "jobTestE", 2, "FAILED");
-        Statistics statE3 = factory.createStatistics(new Date(), "jobTestE", 3, "ABORTED");
-        Statistics statE4 = factory.createStatistics(new Date(), "jobTestE", 4, "UNSTABLE");
-        Statistics statF1 = factory.createStatistics(new Date(), "jobTestF", 1, "SUCCESS");
-        Statistics statF2 = factory.createStatistics(new Date(), "jobTestF", 2, "FAILED");
-        Statistics statF3 = factory.createStatistics(new Date(), "jobTestF", 3, "ABORTED");
-        Statistics statF4 = factory.createStatistics(new Date(), "jobTestF", 4, "UNSTABLE");
+        Statistics statA1 = factory.createStatistics(new Date(), "jobTestA", 1, Result.SUCCESS.toString());
+        Statistics statA2 = factory.createStatistics(new Date(), "jobTestA", 2, Result.FAILURE.toString());
+        Statistics statA3 = factory.createStatistics(new Date(), "jobTestA", 3, Result.ABORTED.toString());
+        Statistics statA4 = factory.createStatistics(new Date(), "jobTestA", 4, Result.UNSTABLE.toString());
+        Statistics statB1 = factory.createStatistics(new Date(), "jobTestB", 1, Result.SUCCESS.toString());
+        Statistics statB2 = factory.createStatistics(new Date(), "jobTestB", 2, Result.FAILURE.toString());
+        Statistics statB3 = factory.createStatistics(new Date(), "jobTestB", 3, Result.ABORTED.toString());
+        Statistics statB4 = factory.createStatistics(new Date(), "jobTestB", 4, Result.UNSTABLE.toString());
+        Statistics statC1 = factory.createStatistics(new Date(), "jobTestC", 1, Result.SUCCESS.toString());
+        Statistics statC2 = factory.createStatistics(new Date(), "jobTestC", 2, Result.FAILURE.toString());
+        Statistics statC3 = factory.createStatistics(new Date(), "jobTestC", 3, Result.ABORTED.toString());
+        Statistics statC4 = factory.createStatistics(new Date(), "jobTestC", 4, Result.UNSTABLE.toString());
+        Statistics statD1 = factory.createStatistics(new Date(), "jobTestD", 1, Result.SUCCESS.toString());
+        Statistics statD2 = factory.createStatistics(new Date(), "jobTestD", 2, Result.FAILURE.toString());
+        Statistics statD3 = factory.createStatistics(new Date(), "jobTestD", 3, Result.ABORTED.toString());
+        Statistics statD4 = factory.createStatistics(new Date(), "jobTestD", 4, Result.UNSTABLE.toString());
+        Statistics statE1 = factory.createStatistics(new Date(), "jobTestE", 1, Result.SUCCESS.toString());
+        Statistics statE2 = factory.createStatistics(new Date(), "jobTestE", 2, Result.FAILURE.toString());
+        Statistics statE3 = factory.createStatistics(new Date(), "jobTestE", 3, Result.ABORTED.toString());
+        Statistics statE4 = factory.createStatistics(new Date(), "jobTestE", 4, Result.UNSTABLE.toString());
+        Statistics statF1 = factory.createStatistics(new Date(), "jobTestF", 1, Result.SUCCESS.toString());
+        Statistics statF2 = factory.createStatistics(new Date(), "jobTestF", 2, Result.FAILURE.toString());
+        Statistics statF3 = factory.createStatistics(new Date(), "jobTestF", 3, Result.ABORTED.toString());
+        Statistics statF4 = factory.createStatistics(new Date(), "jobTestF", 4, Result.UNSTABLE.toString());
 
         list.add(statA1);
         list.add(statA2);
@@ -139,6 +140,27 @@ public class StatisticsMockFactory {
         return list;
     }
 
+    public List<FailureCause> createFailureCauses() {
+        List<String> categories = new ArrayList<String>();
+        categories.add("category1");
+        categories.add("category2");
+        categories.add("category3");
+        List<FailureCause> list = new ArrayList<FailureCause>();
+        FailureCause cause1 = new FailureCause("cause1", "cause1 description");
+        cause1.setId("causeId-1");
+        cause1.setCategories(categories);
+        FailureCause cause2 = new FailureCause("cause2", "cause2 description");
+        cause2.setId("causeId-2");
+        cause2.setCategories(categories);
+        FailureCause cause3 = new FailureCause("cause3", "cause3 description");
+        cause3.setId("causeId-3");
+        cause3.setCategories(categories);
+        list.add(cause1);
+        list.add(cause2);
+        list.add(cause3);
+        return list;
+    }
+
     /**
      * Create mocks of foundCauses
      * @return
@@ -158,7 +180,7 @@ public class StatisticsMockFactory {
         //create a failure cause associated to categories and indications above
         FailureCause failureCause =
                 new FailureCause("Failure cause name", "Failure cause description", "comment");
-        failureCause.setId("CauseID-1");
+        failureCause.setId("causeId-1");
         failureCause.setCategories(FailureCauseCategoryList);
         failureCause.addIndication(indication1);
         failureCause.addIndication(indication2);
@@ -166,7 +188,7 @@ public class StatisticsMockFactory {
 
         AbstractBuild build = Mockito.mock(AbstractBuild.class);
         FoundIndication foundIndication1 = new FoundIndication(build, "pattern1", "matching file", "matching string");
-        FoundIndication foundIndication2 = new FoundIndication(build, "pattern2", "matching file", "matching string");
+        FoundIndication foundIndication2 = new FoundIndication(build, "pattern2", "matching file", "matching string 2");
 
         //create a found failure cause wrapping the failure cause above
         FoundFailureCause foundFailureCause = new FoundFailureCause(failureCause);

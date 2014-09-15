@@ -27,10 +27,12 @@ import com.ericsson.jenkins.plugins.dashbeats.model.BuildInfo;
 import com.ericsson.jenkins.plugins.dashbeats.model.FaultCauseInfo;
 import com.ericsson.jenkins.plugins.dashbeats.model.StatsSummary;
 import com.ericsson.jenkins.plugins.dashbeats.model.Welcome;
-import com.sonyericsson.jenkins.plugins.bfa.model.indication.FoundIndication;
+import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.FailureCauseStatistics;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
 import hudson.model.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -43,10 +45,14 @@ import java.util.*;
  */
 public class DashBeatsStore {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DashBeatsStore.class.getName());
+
     /* BFA statistics store */
     private List<Statistics> statsStore;
     /* Build Info store using a HashMap to avoid duplicates */
     private Map<String, BuildInfo> buildInfoStore;
+    /* Latest failed build store using a HashMap to avoid duplicates */
+    private Map<String, BuildInfo> latestFailedBuildStore;
     /* Fault Cause Info store using a HashMap to avoid duplicates*/
     private Map<String, FaultCauseInfo> faultCauseInfoStore;
 
@@ -59,6 +65,7 @@ public class DashBeatsStore {
     public DashBeatsStore() {
         this.statsStore = new ArrayList<Statistics>();
         this.buildInfoStore = new HashMap<String, BuildInfo>();
+        this.latestFailedBuildStore = new HashMap<String, BuildInfo>();
         this.faultCauseInfoStore = new HashMap<String, FaultCauseInfo>();
         this.startDate = new Date();
         this.lastDate = new Date();
@@ -85,11 +92,13 @@ public class DashBeatsStore {
      * the build info store and the fault cause info store., by compiling the statistics store.
      *
      * @param stats
+     * @param causes
      */
-    public void store(Statistics stats) {
+    public void store(final Statistics stats, final Collection<FailureCause> causes) {
         statsStore.add(stats);
         updateBuildInfoStore(stats);
-        updateFaultCauseInfoStore(stats);
+        updateLatestFailedBuildStore(stats);
+        updateFaultCauseInfoStore(stats, causes);
         Date date = stats.getStartingTime();
         if (startDate.after(date)) {
             startDate = date;
@@ -118,7 +127,7 @@ public class DashBeatsStore {
     /**
      * Update the Build Info store by compiling data from StatsStore
      */
-    private void updateBuildInfoStore(Statistics stats) {
+    private void updateBuildInfoStore(final Statistics stats) {
         Date date = stats.getStartingTime();
         String job = stats.getProjectName();
         int buildNumber = stats.getBuildNumber();
@@ -137,36 +146,67 @@ public class DashBeatsStore {
             buildInfo.incrementBuildResult(result);
             buildInfoStore.put(job, buildInfo);
         }
+        LOGGER.info("Added a build info : {}", buildInfo);
+    }
+
+    /**
+     * Update the latest failed build store by compiling data from StatsStore
+     */
+    private void updateLatestFailedBuildStore(final Statistics stats) {
+        Date date = stats.getStartingTime();
+        String job = stats.getProjectName();
+        int buildNumber = stats.getBuildNumber();
+        String result = stats.getResult();
+        BuildInfo buildInfo = null;
+        if (Result.FAILURE.toString().equals(stats.getResult())) {
+            if (latestFailedBuildStore.containsKey(job)) {
+                buildInfo = latestFailedBuildStore.get(job);
+                buildInfo.incrementBuildResult(result);
+                if (buildNumber > buildInfo.getBuildNumber()) {
+                    buildInfo.setDate(date);
+                    buildInfo.setResult(result);
+                    buildInfo.setBuildNumber(buildNumber);
+                }
+            } else {
+                buildInfo = new BuildInfo(date, job, buildNumber, result);
+                buildInfo.incrementBuildResult(result);
+                latestFailedBuildStore.put(job, buildInfo);
+            }
+        }
+        LOGGER.info("Added a latest failed build : {}", buildInfo);
     }
 
     /**
      * Update the fault cause store by compiling data from statistics store
      */
-    private void updateFaultCauseInfoStore(Statistics stats) {
+    private void updateFaultCauseInfoStore(final Statistics stats, final Collection<FailureCause> causes) {
         // For every stat in the store, get the failure indications and store into
         // a map by ensuring the uniqueness. In case the same failure cause is already stored,
         // increment the number of failures and set the most recent date
-        String cause = "";
         Date date = stats.getStartingTime();
+        FaultCauseInfo commonFaultCause = null;
         if (Result.FAILURE.toString().equals(stats.getResult())) {
+            LOGGER.info("iterating failures cause statistics... size[{}]", stats.getFailureCauseStatisticsList().size());
             for (FailureCauseStatistics fcs : stats.getFailureCauseStatisticsList()) {
-                for (FoundIndication indication : fcs.getIndications()) {
-                    cause = indication.getMatchingString();
-                    FaultCauseInfo commonFaultCause = null;
-
-                    // already existed, then increment counter and update date if more recent
-                    if (faultCauseInfoStore.containsKey(cause)) {
-                        commonFaultCause = faultCauseInfoStore.get(cause);
-                        commonFaultCause.setFailures(commonFaultCause.getFailures() + 1);
-                        if (date.after(commonFaultCause.getDate())) {
-                            faultCauseInfoStore.put(cause, commonFaultCause);
-                        }
-                    } else {
-                        commonFaultCause = new FaultCauseInfo(date, cause);
-                        faultCauseInfoStore.put(cause, commonFaultCause);
+                String causeId = fcs.getId();
+                FailureCause cause = findFailureCause(causeId, causes);
+                // if already existed, then increment counter and update date if more recent
+                // update the name and categories, they may have changed
+                if (faultCauseInfoStore.containsKey(causeId)) {
+                    commonFaultCause = faultCauseInfoStore.get(causeId);
+                    commonFaultCause.setCauseName(cause.getName());
+                    commonFaultCause.setCategories(cause.getCategories());
+                    commonFaultCause.setFailures(commonFaultCause.getFailures() + 1);
+                    if (date.after(commonFaultCause.getDate())) {
+                        faultCauseInfoStore.put(causeId, commonFaultCause);
                     }
-
+                } else {
+                    commonFaultCause = new FaultCauseInfo(date, causeId);
+                    commonFaultCause.setCauseName(cause.getName());
+                    commonFaultCause.setCategories(cause.getCategories());
+                    faultCauseInfoStore.put(causeId, commonFaultCause);
                 }
+                LOGGER.info("Added a common fault : {}", commonFaultCause);
             }
         }
     }
@@ -202,7 +242,7 @@ public class DashBeatsStore {
     private List<BuildInfo> getLatestFailedBuilds() {
         // once all failed builds are gathered and unique, sort them
         Map<Date, BuildInfo> latestFailedBuilds = new TreeMap<Date, BuildInfo>();
-        for (BuildInfo latestFailedBuild : buildInfoStore.values()) {
+        for (BuildInfo latestFailedBuild : latestFailedBuildStore.values()) {
             if (Result.FAILURE.toString().equals(latestFailedBuild.getResult())) {
                 latestFailedBuilds.put(latestFailedBuild.getDate(), latestFailedBuild);
             }
@@ -249,19 +289,42 @@ public class DashBeatsStore {
      */
     private List<BuildInfo> getTopFailedJobs() {
         // once all builds info are gathered and unique, sort them
-        Map<Integer, BuildInfo> latestBuilds = new TreeMap<Integer, BuildInfo>();
-        for (BuildInfo latestBuild : buildInfoStore.values()) {
-            latestBuilds.put(latestBuild.getFailures(), latestBuild);
+        Map<Integer, List<BuildInfo>> latestBuilds = new TreeMap<Integer, List<BuildInfo>>();
+        for (BuildInfo buildInfo : buildInfoStore.values()) {
+            if (!latestBuilds.containsKey(buildInfo.getFailures())) {
+                latestBuilds.put(buildInfo.getFailures(), new ArrayList<BuildInfo>());
+            }
+            latestBuilds.get(buildInfo.getFailures()).add(buildInfo);
         }
         // use reverse order to have most recent on top
         latestBuilds = ((TreeMap) latestBuilds).descendingMap();
         // prepare a list with a MAX number of fault causes
         List<BuildInfo> list = new ArrayList<BuildInfo>();
-        for (BuildInfo item : latestBuilds.values()) {
-            if (list.size() < StatsSummary.MAX_PER_LIST) {
-                list.add(item);
+        for (List<BuildInfo> item : latestBuilds.values()) {
+            for (BuildInfo buildInfo: item) {
+                if (list.size() < StatsSummary.MAX_PER_LIST) {
+                    list.add(buildInfo);
+                } else {
+                    break;
+                }
             }
         }
         return list;
+    }
+
+    /**
+     * Find the Failure Cause by Id
+     *
+     * @param causeId
+     * @param causes
+     * @return failure cause
+     */
+    private FailureCause findFailureCause(String causeId, Collection<FailureCause> causes) {
+        for (FailureCause cause : causes) {
+            if (cause.getId().equals(causeId)) {
+                return cause;
+            }
+        }
+        return null;
     }
 }

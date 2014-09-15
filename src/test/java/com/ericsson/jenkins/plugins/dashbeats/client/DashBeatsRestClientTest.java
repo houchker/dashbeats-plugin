@@ -23,6 +23,7 @@
  */
 package com.ericsson.jenkins.plugins.dashbeats.client;
 
+import hudson.model.Result;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
@@ -166,10 +167,10 @@ public class DashBeatsRestClientTest {
         List<JSONObject> list = new ArrayList<JSONObject>();
         JSONObject o1 = new JSONObject();
         o1.put("label", "Violinist");
-        o1.put("value", "SUCCESS");
+        o1.put("value", Result.SUCCESS.toString());
         JSONObject o2 = new JSONObject();
         o2.put("label", "Double bass");
-        o2.put("value", "SUCCESS");
+        o2.put("value", Result.SUCCESS.toString());
         list.add(o1);
         list.add(o2);
         jsonContent.put("items", list);
@@ -226,13 +227,13 @@ public class DashBeatsRestClientTest {
         List<JSONObject> list = new ArrayList<JSONObject>();
         JSONObject o1 = new JSONObject();
         o1.put("label", "Picasso");
-        o1.put("value", "FAILED");
+        o1.put("value", Result.FAILURE.toString());
         JSONObject o2 = new JSONObject();
         o2.put("label", "Pianist");
-        o2.put("value", "FAILED");
+        o2.put("value", Result.FAILURE.toString());
         JSONObject o3 = new JSONObject();
         o3.put("label", "Drummer");
-        o3.put("value", "FAILED");
+        o3.put("value", Result.FAILURE.toString());
         list.add(o1);
         list.add(o2);
         list.add(o3);

@@ -217,7 +217,7 @@ public class BuildInfo {
      * @return
      */
     public String toString() {
-        StringBuffer sb = new StringBuffer("")
+        StringBuilder sb = new StringBuilder("")
                 .append(job).append(": ")
                 .append(" #").append(buildNumber)
                 .append(" ").append(result).append(" --- ")

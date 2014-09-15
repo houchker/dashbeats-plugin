@@ -25,6 +25,8 @@ package com.ericsson.jenkins.plugins.dashbeats.json;
 
 import com.ericsson.jenkins.plugins.dashbeats.model.*;
 import net.sf.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +38,8 @@ import java.util.List;
  * Created by ekongto on 2014-09-10.
  */
 public class JsonFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonFactory.class.getName());
 
     /* The DashBeats authorization token */
     private String authToken;
@@ -69,6 +73,7 @@ public class JsonFactory {
         String welcome = "DashBeats statistics update at " + new Date();
         JSONObject jsonObject = createJson();
         jsonObject.put("text", welcome);
+        LOGGER.debug("Created a welcome content : {}", jsonObject);
         return jsonObject;
     }
 
@@ -83,10 +88,12 @@ public class JsonFactory {
         for (FaultCauseInfo data : summary.getCommonFaultCauses()) {
             jsonObject = createJson();
             StringBuilder jsonContent = new StringBuilder("")
-                    .append(data.getFaultCause()).append("  ")
+                    .append(data.getCauseName()).append("  ")
+                    .append(" (").append(data.getCategoriesAsString()).append(")")
                     .append(" failures(").append(data.getFailures()).append(")");
             jsonObject.put("label", jsonContent.toString());
             list.add(jsonObject);
+            LOGGER.debug("Created a common fault cause content : {}", jsonObject);
         }
         return list;
     }
@@ -107,6 +114,7 @@ public class JsonFactory {
                     .append("  failures(").append(data.getFailures()).append(")");
             jsonObject.put("label", jsonContent.toString());
             list.add(jsonObject);
+            LOGGER.debug("Created a latest failed build content : {}", jsonObject);
         }
         return list;
     }
@@ -133,6 +141,7 @@ public class JsonFactory {
                     .append("  fail rate(").append(data.getRateOfFailure()).append("%)");
             jsonObject.put("label", jsonContent.toString());
             list.add(jsonObject);
+            LOGGER.debug("Created a latest build content : {}", jsonObject);
         }
         return list;
 
@@ -154,6 +163,7 @@ public class JsonFactory {
                     .append("  failures(").append(data.getFailures()).append(")");
             jsonObject.put("label", jsonContent.toString());
             list.add(jsonObject);
+            LOGGER.debug("Created a top failed build content : {}", jsonObject);
         }
         return list;
     }

@@ -24,6 +24,7 @@
 package com.ericsson.jenkins.plugins.dashbeats.db;
 
 import com.ericsson.jenkins.plugins.dashbeats.model.*;
+import hudson.model.Result;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,18 +90,16 @@ public class SummaryMockFactory {
      */
     private static List<BuildInfo> createLatestBuilds() {
         List<BuildInfo> list = new ArrayList<BuildInfo>();
-        BuildInfo buildInfo1 = createBuildInfo("testJob1", 1, "FAILED");
-        BuildInfo buildInfo2 = createBuildInfo("testJob1", 2, "SUCCESS");
-        BuildInfo buildInfo3 = createBuildInfo("testJob2", 1, "FAILED");
-        BuildInfo buildInfo4 = createBuildInfo("testJob2", 2, "UNSTABLE");
-        BuildInfo buildInfo5 = createBuildInfo("testJob3", 1, "ABORTED");
-        BuildInfo buildInfo6 = createBuildInfo("testJob4", 2, "FAILED");
+        BuildInfo buildInfo1 = createBuildInfo("testJob1", 1, Result.FAILURE.toString());
+        BuildInfo buildInfo2 = createBuildInfo("testJob1", 2, Result.SUCCESS.toString());
+        BuildInfo buildInfo3 = createBuildInfo("testJob2", 1, Result.FAILURE.toString());
+        BuildInfo buildInfo4 = createBuildInfo("testJob2", 2, Result.UNSTABLE.toString());
+        BuildInfo buildInfo5 = createBuildInfo("testJob3", 1, Result.ABORTED.toString());
         list.add(buildInfo1);
         list.add(buildInfo2);
         list.add(buildInfo3);
         list.add(buildInfo4);
         list.add(buildInfo5);
-        list.add(buildInfo6);
         return list;
     }
 
@@ -110,18 +109,16 @@ public class SummaryMockFactory {
      */
     private static List<BuildInfo> createLatestFailedBuilds() {
         List<BuildInfo> list = new ArrayList<BuildInfo>();
-        BuildInfo buildInfo1 = createBuildInfo("testJob1", 1, "FAILED");
-        BuildInfo buildInfo2 = createBuildInfo("testJob1", 2, "FAILED");
-        BuildInfo buildInfo3 = createBuildInfo("testJob2", 1, "FAILED");
-        BuildInfo buildInfo4 = createBuildInfo("testJob2", 2, "FAILED");
-        BuildInfo buildInfo5 = createBuildInfo("testJob3", 1, "FAILED");
-        BuildInfo buildInfo6 = createBuildInfo("testJob3", 2, "FAILED");
+        BuildInfo buildInfo1 = createBuildInfo("testJob1", 1, Result.FAILURE.toString());
+        BuildInfo buildInfo2 = createBuildInfo("testJob1", 2, Result.FAILURE.toString());
+        BuildInfo buildInfo3 = createBuildInfo("testJob2", 1, Result.FAILURE.toString());
+        BuildInfo buildInfo4 = createBuildInfo("testJob2", 2, Result.FAILURE.toString());
+        BuildInfo buildInfo5 = createBuildInfo("testJob3", 1, Result.FAILURE.toString());
         list.add(buildInfo1);
         list.add(buildInfo2);
         list.add(buildInfo3);
         list.add(buildInfo4);
         list.add(buildInfo5);
-        list.add(buildInfo6);
         return list;
     }
 
@@ -131,18 +128,16 @@ public class SummaryMockFactory {
      */
     private static List<BuildInfo> createTopFailedJobs() {
         List<BuildInfo> list = new ArrayList<BuildInfo>();
-        BuildInfo buildInfo1 = createBuildInfo("testJob1", 1, "FAILED");
-        BuildInfo buildInfo2 = createBuildInfo("testJob1", 2, "FAILED");
-        BuildInfo buildInfo3 = createBuildInfo("testJob2", 1, "FAILED");
-        BuildInfo buildInfo4 = createBuildInfo("testJob2", 2, "FAILED");
-        BuildInfo buildInfo5 = createBuildInfo("testJob3", 1, "FAILED");
-        BuildInfo buildInfo6 = createBuildInfo("testJob3", 2, "FAILED");
+        BuildInfo buildInfo1 = createBuildInfo("testJob1", 1, Result.FAILURE.toString());
+        BuildInfo buildInfo2 = createBuildInfo("testJob1", 2, Result.FAILURE.toString());
+        BuildInfo buildInfo3 = createBuildInfo("testJob2", 1, Result.FAILURE.toString());
+        BuildInfo buildInfo4 = createBuildInfo("testJob2", 2, Result.FAILURE.toString());
+        BuildInfo buildInfo5 = createBuildInfo("testJob3", 1, Result.FAILURE.toString());
         list.add(buildInfo1);
         list.add(buildInfo2);
         list.add(buildInfo3);
         list.add(buildInfo4);
         list.add(buildInfo5);
-        list.add(buildInfo6);
         return list;
     }
 

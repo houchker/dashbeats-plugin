@@ -31,6 +31,7 @@ import com.ericsson.jenkins.plugins.dashbeats.model.StatsSummary;
 import com.sonyericsson.jenkins.plugins.bfa.db.KnowledgeBase;
 import com.sonyericsson.jenkins.plugins.bfa.db.LocalFileKnowledgeBase;
 import com.sonyericsson.jenkins.plugins.bfa.graphs.GraphFilterBuilder;
+import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
 import hudson.Extension;
 import hudson.Util;
@@ -41,6 +42,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -156,7 +158,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
      */
     @Override
     public void saveStatistics(Statistics stat) throws Exception {
-        store.store(stat);
+        store.store(stat, getCauses());
         StatsSummary statSummary = store.createSummary();
         publisher.publish(statSummary);
     }

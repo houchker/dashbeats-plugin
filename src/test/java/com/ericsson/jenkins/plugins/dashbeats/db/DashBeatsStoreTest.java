@@ -26,6 +26,7 @@ package com.ericsson.jenkins.plugins.dashbeats.db;
 
 import com.ericsson.jenkins.plugins.dashbeats.model.*;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
+import hudson.model.Result;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,8 +58,8 @@ public class DashBeatsStoreTest {
     @Test
     public void shouldStoreStatsSuccessfully() throws Exception {
         Assert.assertEquals(0, store.size());
-        Statistics stat = factory.createStatistics(new Date(), "jobTest1", 1, "SUCCESS");
-        store.store(stat);
+        Statistics stat = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
+        store.store(stat, factory.createFailureCauses());
         Assert.assertEquals(1, store.size());
     }
 
@@ -71,8 +72,8 @@ public class DashBeatsStoreTest {
     @Test
     public void shouldClearStatsStoreSuccessfully() throws Exception {
         Assert.assertEquals(0, store.size());
-        Statistics stat = factory.createStatistics(new Date(), "jobTest1", 1, "SUCCESS");
-        store.store(stat);
+        Statistics stat = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
+        store.store(stat, factory.createFailureCauses());
         Assert.assertEquals(1, store.size());
         store.clear();
         Assert.assertEquals(0, store.size());
@@ -96,7 +97,7 @@ public class DashBeatsStoreTest {
 
         List<Statistics> statsList = factory.createStatisticsBatch();
         for (Statistics stat: statsList) {
-            store.store(stat);
+            store.store(stat, factory.createFailureCauses());
         }
 
         Assert.assertEquals(24, store.size());
@@ -118,12 +119,47 @@ public class DashBeatsStoreTest {
         Assert.assertNotNull(lb);
         Assert.assertNotNull(tfb);
 
-        Assert.assertEquals(0, cfc.size());
-        Assert.assertEquals(1, lfb.size());
-        Assert.assertEquals(1, lb.size());
-        Assert.assertEquals(1, tfb.size());
+        Assert.assertEquals(1, cfc.size());
+        Assert.assertEquals(5, lfb.size());
+        Assert.assertEquals(5, lb.size());
+        Assert.assertEquals(5, tfb.size());
 
-        //todo assert more
+        // Assert Common Fault Causes
+        Assert.assertEquals("causeId-1", cfc.get(0).getCauseId());
+        Assert.assertEquals("cause1", cfc.get(0).getCauseName());
+        Assert.assertEquals(6, cfc.get(0).getFailures());
+
+        // Assert latest failed builds
+        Assert.assertEquals("jobTestF", lfb.get(0).getJob());
+        Assert.assertEquals(Result.FAILURE.toString(), lfb.get(0).getResult());
+        Assert.assertEquals("jobTestE", lfb.get(1).getJob());
+        Assert.assertEquals(Result.FAILURE.toString(), lfb.get(1).getResult());
+        Assert.assertEquals("jobTestD", lfb.get(2).getJob());
+        Assert.assertEquals(Result.FAILURE.toString(), lfb.get(2).getResult());
+        Assert.assertEquals("jobTestC", lfb.get(3).getJob());
+        Assert.assertEquals(Result.FAILURE.toString(), lfb.get(3).getResult());
+        Assert.assertEquals("jobTestB", lfb.get(4).getJob());
+        Assert.assertEquals(Result.FAILURE.toString(), lfb.get(4).getResult());
+
+        // Assert latest builds
+        Assert.assertEquals("jobTestF", lb.get(0).getJob());
+        Assert.assertEquals(Result.UNSTABLE.toString(), lb.get(0).getResult());
+        Assert.assertEquals("jobTestE", lb.get(1).getJob());
+        Assert.assertEquals(Result.UNSTABLE.toString(), lb.get(1).getResult());
+        Assert.assertEquals("jobTestD", lb.get(2).getJob());
+        Assert.assertEquals(Result.UNSTABLE.toString(), lb.get(2).getResult());
+        Assert.assertEquals("jobTestC", lb.get(3).getJob());
+        Assert.assertEquals(Result.UNSTABLE.toString(), lb.get(3).getResult());
+        Assert.assertEquals("jobTestB", lb.get(4).getJob());
+        Assert.assertEquals(Result.UNSTABLE.toString(), lb.get(4).getResult());
+
+        // Assert top failed jobs, not ordered by date
+        Assert.assertEquals(Result.UNSTABLE.toString(), tfb.get(0).getResult());
+        Assert.assertEquals(Result.UNSTABLE.toString(), tfb.get(1).getResult());
+        Assert.assertEquals(Result.UNSTABLE.toString(), tfb.get(2).getResult());
+        Assert.assertEquals(Result.UNSTABLE.toString(), tfb.get(3).getResult());
+        Assert.assertEquals(Result.UNSTABLE.toString(), tfb.get(4).getResult());
+
     }
 
 }

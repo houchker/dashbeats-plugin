@@ -23,26 +23,31 @@
  */
 package com.ericsson.jenkins.plugins.dashbeats.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by ekongto on 2014-09-11.
  */
 public class FaultCauseInfo {
     private Date date;
-    private String faultCause;
+    private String causeId;
+    private String causeName;
+    private List<String> categories;
     private int failures = 0;
 
     /**
      * Constructor of fault cause info
      *
      * @param date
-     * @param faultCause
+     * @param causeId
      */
-    public FaultCauseInfo(Date date, String faultCause) {
+    public FaultCauseInfo(Date date, String causeId) {
         this.date = date;
-        this.faultCause = faultCause;
-        if (faultCause != null && !"".equals(faultCause)) {
+        this.causeId = causeId;
+        categories = new ArrayList<String>();
+        if (causeId != null && !"".equals(causeId)) {
             this.failures = 1;
         }
     }
@@ -67,8 +72,41 @@ public class FaultCauseInfo {
      * Get the fault cause
      * @return
      */
-    public String getFaultCause() {
-        return faultCause;
+    public String getCauseId() {
+        return causeId;
+    }
+
+    /** Get the cause name
+     *
+     * @return
+     */
+    public String getCauseName() {
+        return causeName;
+    }
+
+    /** Set the cause name
+     *
+     * @param causeName
+     */
+    public void setCauseName(String causeName) {
+        this.causeName = causeName;
+    }
+
+    /** Get the causes categories
+     *
+     * @return
+     */
+    public List<String> getCategories() {
+        return categories;
+    }
+
+    /**
+     * Set the causes categories
+     *
+     * @param categories
+     */
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
     }
 
     /**
@@ -88,12 +126,32 @@ public class FaultCauseInfo {
     }
 
     /**
+     * Get the list of categories as string
+     * @return
+     */
+    public String getCategoriesAsString() {
+        if (categories == null || categories.isEmpty()) {
+            return null;
+        }
+        StringBuilder builder = new StringBuilder();
+        for (String item : categories) {
+            if (builder.length() > 0) {
+                builder.append("/");
+            }
+            builder.append(item);
+        }
+        return builder.toString();
+    }
+
+    /**
      * Override to pring the content of the fault cause info
      * @return
      */
     public String toString() {
-        StringBuffer sb = new StringBuffer("")
-                .append(faultCause)
+        StringBuilder sb = new StringBuilder("")
+                .append(" id:").append(causeId)
+                .append(" cause:").append(causeName)
+                .append(" categories:").append(getCategoriesAsString())
                 .append("     failures(").append(failures).append(")");
         return sb.toString();
     }
