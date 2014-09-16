@@ -33,7 +33,9 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by ekongto on 2014-09-16.
@@ -89,25 +91,101 @@ public class DashBeatsKnowledgeBaseTest {
     }
 
     /**
-     * GIVEN a DashBeats store with 2 statistics objects
+     * GIVEN a DashBeats store with 1 statistics objects
      * and a filter
-     * WHEN get statistics using the filter
+     * WHEN get statistics using the date in the filter
      * THEN the return list includes statistics object matching the filer
      */
     @Test
-    public void shouldGetMatchingStatistics() throws Exception {
+    public void shouldGetMatchingDateStatistics() throws Exception {
+        Statistics stat1 = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
+        List<Integer> buildList = new ArrayList<Integer>();
+        buildList.add(1);
+        kb.saveStatistics(stat1);
+        GraphFilterBuilder filter = new GraphFilterBuilder();
+        filter.setBuildNumbers(buildList);
+        // not valid date
+        filter.setSince(new Date());
+        filter.setProjectName("jobTest1");
+        filter.setResult(Result.SUCCESS.toString());
+        Assert.assertEquals(0, kb.getStatistics(filter, 1).size());
+    }
+
+    /**
+     * GIVEN a DashBeats store with 1 statistics objects
+     * and a filter
+     * WHEN get statistics using the jobname in the filter
+     * THEN the return list includes statistics object matching the filer
+     */
+    @Test
+    public void shouldGetMatchingJobNameStatistics() throws Exception {
         Statistics stat1 = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
         kb.saveStatistics(stat1);
         GraphFilterBuilder filter = new GraphFilterBuilder();
-        filter.setProjectName("jobTest2");
-        filter.setSince(new Date());
-        Assert.assertEquals(0, kb.getStatistics(filter, 1).size());
-        filter.setProjectName("jobTest2");
+        // not valid job name
         filter.setSince(new Date(stat1.getStartingTime().getTime()-1000));
+        filter.setProjectName("jobTest2");
+        filter.setResult(Result.SUCCESS.toString());
         Assert.assertEquals(0, kb.getStatistics(filter, 1).size());
-        filter.setProjectName("jobTest1");
-        filter.setSince(new Date(stat1.getStartingTime().getTime()-1000));
-        Assert.assertEquals(1, kb.getStatistics(filter, 1).size());
     }
 
+    /**
+     * GIVEN a DashBeats store with 1 statistics objects
+     * and a filter
+     * WHEN get statistics using the result in the filter
+     * THEN the return list includes statistics object matching the filer
+     */
+    @Test
+    public void shouldGetMatchingResultStatistics() throws Exception {
+        Statistics stat1 = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
+        kb.saveStatistics(stat1);
+        GraphFilterBuilder filter = new GraphFilterBuilder();
+        // not valid result
+        filter.setProjectName("jobTest1");
+        filter.setResult(Result.FAILURE.toString());
+        filter.setSince(new Date(stat1.getStartingTime().getTime() - 1000));
+        Assert.assertEquals(0, kb.getStatistics(filter, 1).size());
+    }
+
+    /**
+     * GIVEN a DashBeats store with 1 statistics objects
+     * and a filter
+     * WHEN get statistics using the result in the filter
+     * THEN the return list includes statistics object matching the filer
+     */
+    @Test
+    public void shouldGetMatchingBuildNumberStatistics() throws Exception {
+        Statistics stat1 = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
+        List<Integer> buildList = new ArrayList<Integer>();
+        kb.saveStatistics(stat1);
+        GraphFilterBuilder filter = new GraphFilterBuilder();
+        // not build number
+        buildList.add(2);
+        filter.setBuildNumbers(buildList);
+        filter.setSince(new Date(stat1.getStartingTime().getTime()-1000));
+        filter.setProjectName("jobTest2");
+        filter.setResult(Result.SUCCESS.toString());
+        Assert.assertEquals(0, kb.getStatistics(filter, 1).size());
+    }
+
+    /**
+     * GIVEN a DashBeats store with 1 statistics objects
+     * and a filter
+     * WHEN get statistics using the all matching filter
+     * THEN the return list includes statistics object matching the filer
+     */
+    @Test
+    public void shouldGetAllMatchingStatistics() throws Exception {
+        Statistics stat1 = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
+        List<Integer> buildList = new ArrayList<Integer>();
+        kb.saveStatistics(stat1);
+        GraphFilterBuilder filter = new GraphFilterBuilder();
+        // all valid fields
+        buildList.add(1);
+        filter.setBuildNumbers(buildList);
+        filter.setProjectName("jobTest1");
+        filter.setResult(Result.SUCCESS.toString());
+        filter.setSince(new Date(stat1.getStartingTime().getTime() - 1000));
+        Assert.assertEquals(1, kb.getStatistics(filter, 1).size());
+    }
 }

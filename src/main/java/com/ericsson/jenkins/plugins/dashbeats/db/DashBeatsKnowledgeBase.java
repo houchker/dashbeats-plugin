@@ -226,7 +226,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
         }
         // include matching result
         pattern = Pattern.compile(".*" + filter.getResult() + ".*");
-        if (filter.getExcludeResult() != null && !pattern.matcher(stat.getResult()).find()) {
+        if (filter.getResult() != null && !pattern.matcher(stat.getResult()).find()) {
             return false;
         }
         // include matching master name
