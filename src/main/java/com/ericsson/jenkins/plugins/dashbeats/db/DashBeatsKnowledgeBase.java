@@ -33,17 +33,22 @@ import com.sonyericsson.jenkins.plugins.bfa.db.LocalFileKnowledgeBase;
 import com.sonyericsson.jenkins.plugins.bfa.graphs.GraphFilterBuilder;
 import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
+import com.thoughtworks.xstream.XStream;
 import hudson.Extension;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
+import hudson.util.XStream2;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,6 +65,8 @@ import java.util.regex.Pattern;
  */
 public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DashBeatsKnowledgeBase.class.getName());
+
     private static final String DEFAULT_URL = "http://localhost:3030";
     private static final String DEFAULT_AUTH_TOKEN = "YOUR_AUTH_TOKEN";
 
@@ -72,6 +79,16 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     /* DashBeats publisher */
     private DashBeatsPublisher publisher;
 
+    /* BFA statistics store */
+    private Map<String, Statistics> statsStore;
+
+    private static final String DASHBEATS_STORE_FILENAME = "dashbeats-plugin-store.xml";
+    private static final XStream XSTREAM = new XStream2();
+
+    static {
+        XSTREAM.alias("DashBeatsStore", DashBeatsStore.class);
+    }
+
     /**
      * Default constructor.
      */
@@ -81,6 +98,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
         this.authToken = authToken;
         this.store = new DashBeatsStore();
         this.publisher = new DashBeatsPublisher(url, new DashBeatsRestClient(), new JsonFactory(authToken));
+        this.statsStore = new HashMap<String, Statistics>();
     }
 
     /**
@@ -121,6 +139,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     @Override
     public void start() {
         //when the BFA starts
+        loadStore(getCauses());
     }
 
     @Override
@@ -158,8 +177,15 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
      */
     @Override
     public void saveStatistics(Statistics stat) throws Exception {
-        store.store(stat, getCauses());
+        // use job name and build number as unique key
+        statsStore.put(stat.getProjectName() + "#" + stat.getBuildNumber(), stat);
+        // persist the stats store into file
+        saveStore();
+        // update the DashBeats store
+        store.update(stat, getCauses());
+        // create the stat summary to be pubilished
         StatsSummary statSummary = store.createSummary();
+        // publish
         publisher.publish(statSummary);
     }
 
@@ -267,4 +293,39 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
             return FormValidation.ok(Messages.DashBeats_ConnectionOK());
         }
     }
+
+
+    /**
+     * Load all stats from the store, if existed, at start up
+     *
+     * @param causes
+     */
+    private void loadStore(final Collection<FailureCause> causes) {
+        File storeFile = new File(Jenkins.getInstance().getRootDir(), DASHBEATS_STORE_FILENAME);
+        LOGGER.info("Read DashBeats store from file : {}", storeFile.getAbsolutePath());
+        if (storeFile.exists()) {
+            try {
+                statsStore = (Map<String, Statistics>) new XmlFile(XSTREAM, storeFile).read();
+            } catch (IOException e) {
+                LOGGER.error("Failed to read DashBeats store from file : {}", e);
+            }
+            // update build info, failed builds and fault cause stores
+            for (Statistics stats : statsStore.values()) {
+                store.update(stats, causes);
+            }
+        }
+    }
+
+    /**
+     * Save to file stats store
+     */
+    private void saveStore() {
+        File storeFile = new File(Jenkins.getInstance().getRootDir(), DASHBEATS_STORE_FILENAME);
+        try {
+            new XmlFile(XSTREAM, storeFile).write(statsStore);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write DashBeats store to file : {}", e);
+        }
+    }
+
 }

@@ -110,7 +110,7 @@ public class JsonFactory {
             jsonObject = createJson();
             StringBuilder jsonContent = new StringBuilder("")
                     .append(data.getJob())
-                    .append("  build#").append(data.getBuildNumber())
+                    .append("  #").append(data.getBuildNumber())
                     .append("  failures(").append(data.getFailures()).append(")");
             jsonObject.put("label", jsonContent.toString());
             list.add(jsonObject);
@@ -131,7 +131,7 @@ public class JsonFactory {
             jsonObject = createJson();
             StringBuilder jsonContent = new StringBuilder("")
                     .append(data.getJob())
-                    .append("  build#").append(data.getBuildNumber())
+                    .append("  #").append(data.getBuildNumber())
                     .append("  ").append(data.getResult())
                     .append("  total(").append(data.getTotal()).append(")")
                     .append("  successes(").append(data.getSuccesses()).append(")")
@@ -159,7 +159,7 @@ public class JsonFactory {
             jsonObject = createJson();
             StringBuilder jsonContent = new StringBuilder("")
                     .append(data.getJob())
-                    .append("  build#").append(data.getBuildNumber())
+                    .append("  #").append(data.getBuildNumber())
                     .append("  failures(").append(data.getFailures()).append(")");
             jsonObject.put("label", jsonContent.toString());
             list.add(jsonObject);

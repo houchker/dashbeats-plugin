@@ -50,30 +50,30 @@ public class DashBeatsStoreTest {
     }
 
     /**
-     * GIVEN an empty stats store
-     * WHEN storing the stat into the statistics store
-     * THEN the stat is stored it successfully
+     * GIVEN an empty DashBeats store
+     * WHEN updating the store using statistics object
+     * THEN the store is updated successfully
      * and the size is increased to 1
      */
     @Test
-    public void shouldStoreStatsSuccessfully() throws Exception {
+    public void shouldUpdateStoreSuccessfully() throws Exception {
         Assert.assertEquals(0, store.size());
         Statistics stat = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
-        store.store(stat, factory.createFailureCauses());
+        store.update(stat, factory.createFailureCauses());
         Assert.assertEquals(1, store.size());
     }
 
     /**
-     * GIVEN a stats store with 1 stat
+     * GIVEN a DashBeats store with 1 stat
      * WHEN clearing the store
      * THEN the stat is cleared it successfully
      * and the size is 0
      */
     @Test
-    public void shouldClearStatsStoreSuccessfully() throws Exception {
+    public void shouldClearStoreSuccessfully() throws Exception {
         Assert.assertEquals(0, store.size());
         Statistics stat = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
-        store.store(stat, factory.createFailureCauses());
+        store.update(stat, factory.createFailureCauses());
         Assert.assertEquals(1, store.size());
         store.clear();
         Assert.assertEquals(0, store.size());
@@ -81,6 +81,7 @@ public class DashBeatsStoreTest {
 
     /**
      * GIVEN 24 stats objects stored in the statistics store
+     * and these stats are used to update the DashBeats store
      * WHEN creating a StatsSummary
      * THEN the data is compiled successfully from the statistics store
      * and the stats summary is updated including the welcome data
@@ -97,10 +98,10 @@ public class DashBeatsStoreTest {
 
         List<Statistics> statsList = factory.createStatisticsBatch();
         for (Statistics stat: statsList) {
-            store.store(stat, factory.createFailureCauses());
+            store.update(stat, factory.createFailureCauses());
         }
 
-        Assert.assertEquals(24, store.size());
+        Assert.assertEquals(6, store.size());
 
         //WHEN
         StatsSummary summary = store.createSummary();

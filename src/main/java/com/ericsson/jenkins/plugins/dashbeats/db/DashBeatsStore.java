@@ -30,10 +30,16 @@ import com.ericsson.jenkins.plugins.dashbeats.model.Welcome;
 import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.FailureCauseStatistics;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
+import com.thoughtworks.xstream.XStream;
+import hudson.XmlFile;
 import hudson.model.Result;
+import hudson.util.XStream2;
+import jenkins.model.Jenkins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -47,8 +53,6 @@ public class DashBeatsStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DashBeatsStore.class.getName());
 
-    /* BFA statistics store */
-    private List<Statistics> statsStore;
     /* Build Info store using a HashMap to avoid duplicates */
     private Map<String, BuildInfo> buildInfoStore;
     /* Latest failed build store using a HashMap to avoid duplicates */
@@ -63,7 +67,6 @@ public class DashBeatsStore {
      * Default constructor, instantiates statsStore, buildInfoStore and faultCauseInfoStore collections
      */
     public DashBeatsStore() {
-        this.statsStore = new ArrayList<Statistics>();
         this.buildInfoStore = new HashMap<String, BuildInfo>();
         this.latestFailedBuildStore = new HashMap<String, BuildInfo>();
         this.faultCauseInfoStore = new HashMap<String, FaultCauseInfo>();
@@ -72,30 +75,30 @@ public class DashBeatsStore {
     }
 
     /**
-     * Get the number of statistics in the store
+     * Get the size of the build info store, which contains builds info per job.
      *
-     * @return number of statistics
+     * @return
      */
     public int size() {
-        return statsStore.size();
+        return buildInfoStore.size();
     }
 
     /**
-     * Clear all stores, including statsStore, buildInfoStore and faultCauseStore
+     * Clear all stores of builds and common fault causes
      */
     public void clear() {
-        statsStore.clear();
+        buildInfoStore.clear();
+        latestFailedBuildStore.clear();
+        faultCauseInfoStore.clear();
     }
 
     /**
-     * Store a statistics object into the statistics store. At the same time, it update
+     * Update the DashBeats store from a statistics object. At the same time, it update
      * the build info store and the fault cause info store., by compiling the statistics store.
      *
      * @param stats
-     * @param causes
      */
-    public void store(final Statistics stats, final Collection<FailureCause> causes) {
-        statsStore.add(stats);
+    public void update(final Statistics stats, final Collection<FailureCause> causes) {
         updateBuildInfoStore(stats);
         updateLatestFailedBuildStore(stats);
         updateFaultCauseInfoStore(stats, causes);
@@ -115,7 +118,7 @@ public class DashBeatsStore {
      */
     public StatsSummary createSummary() {
         Welcome welcome = new Welcome(StatsSummary.PRODUCT_NAME, startDate, lastDate);
-        StatsSummary summary = new StatsSummary(startDate, lastDate, size());
+        StatsSummary summary = new StatsSummary(startDate, lastDate, buildInfoStore.size());
         summary.setCommonFailureCauses(getCommonFaultCauses());
         summary.setLatestFailedBuilds(getLatestFailedBuilds());
         summary.setLatestBuilds(getLatestBuilds());
@@ -186,7 +189,7 @@ public class DashBeatsStore {
         Date date = stats.getStartingTime();
         FaultCauseInfo commonFaultCause = null;
         if (Result.FAILURE.toString().equals(stats.getResult())) {
-            LOGGER.info("iterating failures cause statistics... size[{}]", stats.getFailureCauseStatisticsList().size());
+            LOGGER.debug("iterating failures cause statistics... size[{}]", stats.getFailureCauseStatisticsList().size());
             for (FailureCauseStatistics fcs : stats.getFailureCauseStatisticsList()) {
                 String causeId = fcs.getId();
                 FailureCause cause = findFailureCause(causeId, causes);
@@ -313,7 +316,7 @@ public class DashBeatsStore {
     }
 
     /**
-     * Find the Failure Cause by Id
+     * Find the Failure Cause by Id from BFA Failure Causes
      *
      * @param causeId
      * @param causes
