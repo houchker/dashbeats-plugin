@@ -30,16 +30,10 @@ import com.ericsson.jenkins.plugins.dashbeats.model.Welcome;
 import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.FailureCauseStatistics;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
-import com.thoughtworks.xstream.XStream;
-import hudson.XmlFile;
 import hudson.model.Result;
-import hudson.util.XStream2;
-import jenkins.model.Jenkins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**

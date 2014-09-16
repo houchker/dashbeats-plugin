@@ -190,7 +190,8 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     }
 
     /**
-     * This method is not implemented as statistics are not saved into a storage.
+     * This method returns all stats from the store. The filter is ignored.
+     *
      * @param filter
      * @param limit
      * @return
@@ -199,7 +200,54 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     @Override
     public List<Statistics> getStatistics(GraphFilterBuilder filter, int limit)
             throws Exception {
-        return new ArrayList<Statistics>();
+        List<Statistics> list = new ArrayList<Statistics>();
+        for (Statistics stat : statsStore.values()) {
+            if (list.size() >= limit) {
+                break;
+            }
+            if(isToBeIncluded(stat, filter)) {
+                list.add(stat);
+            }
+        }
+        return list;
+    }
+
+    private boolean isToBeIncluded(Statistics stat, GraphFilterBuilder filter) {
+        Pattern pattern;
+        // exclude matcing result
+        pattern = Pattern.compile(".*" + filter.getExcludeResult() + ".*");
+        if (filter.getExcludeResult() != null && pattern.matcher(stat.getResult()).find()) {
+            return false;
+        }
+        //include matching job name
+        pattern = Pattern.compile(".*" + filter.getProjectName() + ".*");
+        if (filter.getProjectName() != null && !pattern.matcher(stat.getProjectName()).find()) {
+            return false;
+        }
+        // include matching result
+        pattern = Pattern.compile(".*" + filter.getResult() + ".*");
+        if (filter.getExcludeResult() != null && !pattern.matcher(stat.getResult()).find()) {
+            return false;
+        }
+        // include matching master name
+        pattern = Pattern.compile(".*" + filter.getMasterName() + ".*");
+        if (filter.getMasterName() != null && !pattern.matcher(stat.getMaster()).find()) {
+            return false;
+        }
+        // include matching slave name
+        pattern = Pattern.compile(".*" + filter.getSlaveName() + ".*");
+        if (filter.getSlaveName() != null && !pattern.matcher(stat.getSlaveHostName()).find()) {
+            return false;
+        }
+        // include if build number in the filter list
+        if (filter.getBuildNumbers() != null && !filter.getBuildNumbers().contains(stat.getBuildNumber())) {
+            return false;
+        }
+        // include if start date is after the date in filter
+        if (filter.getSince() != null && !filter.getSince().before(stat.getStartingTime())) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -294,6 +342,14 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
         }
     }
 
+    /**
+     * Get the jenkins root dir
+     *
+     * @return
+     */
+    private String getJenkinsRootDir() {
+        return Jenkins.getInstance().getRootDir().getAbsolutePath();
+    }
 
     /**
      * Load all stats from the store, if existed, at start up
@@ -301,7 +357,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
      * @param causes
      */
     private void loadStore(final Collection<FailureCause> causes) {
-        File storeFile = new File(Jenkins.getInstance().getRootDir(), DASHBEATS_STORE_FILENAME);
+        File storeFile = new File(getJenkinsRootDir(), DASHBEATS_STORE_FILENAME);
         LOGGER.info("Read DashBeats store from file : {}", storeFile.getAbsolutePath());
         if (storeFile.exists()) {
             try {
@@ -320,7 +376,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
      * Save to file stats store
      */
     private void saveStore() {
-        File storeFile = new File(Jenkins.getInstance().getRootDir(), DASHBEATS_STORE_FILENAME);
+        File storeFile = new File(getJenkinsRootDir(), DASHBEATS_STORE_FILENAME);
         try {
             new XmlFile(XSTREAM, storeFile).write(statsStore);
         } catch (IOException e) {
