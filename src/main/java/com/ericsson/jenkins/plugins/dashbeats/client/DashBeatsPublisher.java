@@ -92,6 +92,16 @@ public class DashBeatsPublisher implements StatsPublisher {
     }
 
     /**
+     * Publish to welcome widget on DashBeats server
+     *
+     * @return response code
+     */
+    public int publishWelcome() {
+        JSONObject json = jsonFactory.createWelcome();
+        return publishWelcome(json);
+    }
+
+    /**
      * Publish stats to all widgets on DashBeats server
      *
      * @param summary

@@ -75,12 +75,14 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     /* DashBeats authorization token require to publish stats */
     private String authToken = DEFAULT_AUTH_TOKEN;
     /* DashBeats Statistics Aggregrator */
-    private DashBeatsStore store;
+    private transient DashBeatsStore store;
     /* DashBeats publisher */
-    private DashBeatsPublisher publisher;
-
-    /* BFA statistics store */
-    private Map<String, Statistics> statsStore;
+    private transient DashBeatsPublisher publisher;
+    /* When starting up, the causes list is not yet reloaded
+     * Use this flag to reload statsStore at first build event only once */
+    private transient boolean isReloaded = false;
+    /* BFA statistics store, marked as transient as it persists on demand, not with BFA config */
+    private transient Map<String, Statistics> statsStore;
 
     private static final String DASHBEATS_STORE_FILENAME = "dashbeats-plugin-store.xml";
     private static final XStream XSTREAM = new XStream2();
@@ -94,11 +96,9 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
      */
     @DataBoundConstructor
     public DashBeatsKnowledgeBase(String url, String authToken) {
+        super();
         this.url = url;
         this.authToken = authToken;
-        this.store = new DashBeatsStore();
-        this.publisher = new DashBeatsPublisher(url, new DashBeatsRestClient(), new JsonFactory(authToken));
-        this.statsStore = new HashMap<String, Statistics>();
     }
 
     /**
@@ -139,7 +139,10 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     @Override
     public void start() {
         //when the BFA starts
-        loadStore(getCauses());
+        this.store = new DashBeatsStore();
+        this.publisher = new DashBeatsPublisher(url, new DashBeatsRestClient(), new JsonFactory(authToken));
+        this.statsStore = new HashMap<String, Statistics>();
+        this.publisher.publishWelcome();
     }
 
     @Override
@@ -177,6 +180,10 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
      */
     @Override
     public void saveStatistics(Statistics stat) throws Exception {
+        if (!isReloaded) {
+            isReloaded = true;
+            loadStore(getCauses());
+        }
         // use job name and build number as unique key
         statsStore.put(stat.getProjectName() + "#" + stat.getBuildNumber(), stat);
         // persist the stats store into file
@@ -334,7 +341,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
                 @QueryParameter("authToken") final String paramAuthToken) {
 
             try {
-                new DashBeatsPublisher(paramUrl, new DashBeatsRestClient(), new JsonFactory(paramAuthToken)).ping();
+                new DashBeatsPublisher(paramUrl, new DashBeatsRestClient(), new JsonFactory(paramAuthToken)).publishWelcome();
             } catch (Exception e) {
                 return FormValidation.error(e, Messages.DashBeats_ConnectionError());
             }
@@ -365,10 +372,10 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
             } catch (IOException e) {
                 LOGGER.error("Failed to read DashBeats store from file : {}", e);
             }
-            // update build info, failed builds and fault cause stores
-            for (Statistics stats : statsStore.values()) {
-                store.update(stats, causes);
-            }
+        }
+        // update build info, failed builds and fault cause stores from statsStore
+        for (Statistics stats : statsStore.values()) {
+            store.update(stats, causes);
         }
     }
 

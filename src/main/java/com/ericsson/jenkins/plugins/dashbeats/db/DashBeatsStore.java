@@ -291,7 +291,9 @@ public class DashBeatsStore {
             if (!latestBuilds.containsKey(buildInfo.getFailures())) {
                 latestBuilds.put(buildInfo.getFailures(), new ArrayList<BuildInfo>());
             }
-            latestBuilds.get(buildInfo.getFailures()).add(buildInfo);
+            if (Result.FAILURE.toString().equals(buildInfo.getResult())) {
+                latestBuilds.get(buildInfo.getFailures()).add(buildInfo);
+            }
         }
         // use reverse order to have most recent on top
         latestBuilds = ((TreeMap) latestBuilds).descendingMap();
