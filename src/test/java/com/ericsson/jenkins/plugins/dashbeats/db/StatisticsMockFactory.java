@@ -179,7 +179,7 @@ public class StatisticsMockFactory {
 
         //create a failure cause associated to categories and indications above
         FailureCause failureCause =
-                new FailureCause("Failure cause name", "Failure cause description", "comment");
+                new FailureCause("Failure cause name", "Failure cause description");
         failureCause.setId("causeId-1");
         failureCause.setCategories(FailureCauseCategoryList);
         failureCause.addIndication(indication1);
