@@ -305,8 +305,14 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
         public FormValidation doTestConnection(
                 @QueryParameter("url") final String paramUrl,
                 @QueryParameter("authToken") final String paramAuthToken) {
+
+            int returnCode = -1;
             try {
-                new DashBeatsPublisher(paramUrl, new DashBeatsRestClient(), new JsonFactory(paramAuthToken)).publishWelcome();
+                returnCode = new DashBeatsPublisher(paramUrl, new DashBeatsRestClient(), new JsonFactory(paramAuthToken)).publishWelcome();
+                LOGGER.debug("test returnCode: " + returnCode);
+                if (returnCode == 400) {
+                    return FormValidation.error(Messages.DashBeats_ConnectionError());
+                }
             } catch (Exception e) {
                 return FormValidation.error(e, Messages.DashBeats_ConnectionError());
             }

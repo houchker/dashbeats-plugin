@@ -79,7 +79,7 @@ public class DashBeatsRestClient implements RestClient {
 
             return response.getStatus();
         } catch (Exception e) {
-            LOGGER.info("Exception caught while doing a post to DashBeast server:" + e);
+            LOGGER.error("Exception caught while doing a post to DashBeats server: " + e);
         }
 
         return BAD_REQUEST;
