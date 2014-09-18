@@ -32,6 +32,9 @@ import java.util.List;
 /**
  * Created by ekongto on 2014-09-08.
  */
+// TODO stub the DashBeats server
+// ignored because these tests require DashBeats server
+@Ignore
 public class DashBeatsClientTest {
     private String url;
     private String authToken;
@@ -261,5 +264,4 @@ public class DashBeatsClientTest {
         int code = client.ping(url);
         Assert.assertEquals(400, code);
     }
-
 }
