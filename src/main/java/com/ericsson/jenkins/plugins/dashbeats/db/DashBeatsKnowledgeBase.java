@@ -24,8 +24,8 @@
 package com.ericsson.jenkins.plugins.dashbeats.db;
 
 import com.ericsson.jenkins.plugins.dashbeats.Messages;
+import com.ericsson.jenkins.plugins.dashbeats.client.DashBeatsClient;
 import com.ericsson.jenkins.plugins.dashbeats.client.DashBeatsPublisher;
-import com.ericsson.jenkins.plugins.dashbeats.client.DashBeatsRestClient;
 import com.ericsson.jenkins.plugins.dashbeats.json.JsonFactory;
 import com.ericsson.jenkins.plugins.dashbeats.model.StatsSummary;
 import com.sonyericsson.jenkins.plugins.bfa.db.KnowledgeBase;
@@ -69,13 +69,10 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DashBeatsKnowledgeBase.class.getName());
 
-    private static final String DEFAULT_URL = "http://localhost:3030";
-    private static final String DEFAULT_AUTH_TOKEN = "YOUR_AUTH_TOKEN";
-
     /* URL of the DashBeats server */
-    private String url = DEFAULT_URL;
+    private String url = DashBeatsPublisher.DEFAULT_URL;
     /* DashBeats authorization token require to publish stats */
-    private String authToken = DEFAULT_AUTH_TOKEN;
+    private String authToken = DashBeatsPublisher.DEFAULT_AUTH_TOKEN;
     /* DashBeats Statistics Aggregrator */
     private transient DashBeatsStore store;
     /* DashBeats publisher */
@@ -142,7 +139,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     public void start() {
         //when the BFA starts
         this.store = new DashBeatsStore();
-        this.publisher = new DashBeatsPublisher(url, new DashBeatsRestClient(), new JsonFactory(authToken));
+        this.publisher = new DashBeatsPublisher(url, new DashBeatsClient(), new JsonFactory(authToken));
         this.statsStore = new HashMap<String, Statistics>();
         this.publisher.publishWelcome();
     }
@@ -265,7 +262,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
          * @return the default url.
          */
         public String getDefaultUrl() {
-            return DEFAULT_URL;
+            return DashBeatsPublisher.DEFAULT_URL;
         }
 
         /**
@@ -273,7 +270,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
          * @return the default auth token.
          */
         public String getDefaultAuthToken() {
-            return DEFAULT_AUTH_TOKEN;
+            return DashBeatsPublisher.DEFAULT_AUTH_TOKEN;
         }
 
         /**
@@ -325,7 +322,7 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
 
             int returnCode = -1;
             try {
-                returnCode = new DashBeatsPublisher(paramUrl, new DashBeatsRestClient(), new JsonFactory(paramAuthToken)).publishWelcome();
+                returnCode = new DashBeatsPublisher(paramUrl, new DashBeatsClient(), new JsonFactory(paramAuthToken)).publishWelcome();
                 LOGGER.debug("test returnCode: " + returnCode);
                 if (returnCode == 400) {
                     return FormValidation.error(Messages.DashBeats_ConnectionError());

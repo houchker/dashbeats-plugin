@@ -25,7 +25,6 @@ package com.ericsson.jenkins.plugins.dashbeats.client;
 
 import com.ericsson.jenkins.plugins.dashbeats.json.JsonFactory;
 import com.ericsson.jenkins.plugins.dashbeats.model.StatsSummary;
-import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
 import net.sf.json.JSONObject;
 
 import java.util.List;
@@ -45,6 +44,14 @@ import java.util.List;
  */
 public class DashBeatsPublisher implements StatsPublisher {
 
+    public static final String DEFAULT_URL = "http://localhost:3030";
+    public static final String DEFAULT_AUTH_TOKEN = "YOUR_AUTH_TOKEN";
+    public static final String WELCOME_PATH = "/widgets/welcome";
+    public static final String COMMON_FAULT_CAUSES_PATH = "/widgets/common_fault_causes";
+    public static final String LATEST_BUILDS_PATH = "/widgets/latest_builds";
+    public static final String LATEST_FAILED_BUILDS_PATH = "/widgets/latest_failed_builds";
+    public static final String TOP_FAILED_JOBS_PATH = "/widgets/top_failed_jobs";
+
     /* The url of DashBeats */
     private String url;
     /* Json Factory */
@@ -61,25 +68,25 @@ public class DashBeatsPublisher implements StatsPublisher {
     /* The url of the top failed jobs widget on DashBeats */
     private String topFailedJobsUrl;
 
-    /*The Rest client used to post data to DashBeats */
-    private RestClient client;
+    /*The client used to post data to DashBeats */
+    private DashingClient client;
 
     /**
-     * Constructor, instantiate a rest client and widget's urls.
+     * Constructor, instantiate a client and widget's urls.
      *
      * @param url
      * @param jsonFactory
      */
-    public DashBeatsPublisher(String url, DashBeatsRestClient client, JsonFactory jsonFactory) {
+    public DashBeatsPublisher(String url, DashBeatsClient client, JsonFactory jsonFactory) {
         this.url = url;
         this.jsonFactory = jsonFactory;
         this.client = client;
 
-        this.welcomeUrl = url + "/widgets/welcome";
-        this.commonFaultCausesUrl = url + "/widgets/common_fault_causes";
-        this.latestBuildsUrl = url + "/widgets/latest_builds";
-        this.latestFailedBuildsUrl = url + "/widgets/latest_failed_builds";
-        this.topFailedJobsUrl = url + "/widgets/top_failed_jobs";
+        this.welcomeUrl = url + WELCOME_PATH;
+        this.commonFaultCausesUrl = url + COMMON_FAULT_CAUSES_PATH;
+        this.latestBuildsUrl = url + LATEST_BUILDS_PATH;
+        this.latestFailedBuildsUrl = url + LATEST_FAILED_BUILDS_PATH;
+        this.topFailedJobsUrl = url + TOP_FAILED_JOBS_PATH;
     }
 
     /**

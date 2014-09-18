@@ -26,13 +26,13 @@ package com.ericsson.jenkins.plugins.dashbeats.client;
 import net.sf.json.JSONObject;
 
 /**
- * Interface of a Rest Client
+ * Interface of a Client
  *
  * Created by ekongto on 2014-09-09.
  */
-public interface RestClient {
+public interface DashingClient {
     /**
-     * Post method to publish a data to a REST API at url.
+     * Post method to publish a data to API at url.
      *
      * @param url
      * @param jsonObject

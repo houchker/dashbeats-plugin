@@ -23,6 +23,7 @@
  */
 package com.ericsson.jenkins.plugins.dashbeats.db;
 
+import com.ericsson.jenkins.plugins.dashbeats.client.DashBeatsPublisher;
 import com.sonyericsson.jenkins.plugins.bfa.graphs.GraphFilterBuilder;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
 import hudson.model.Result;
@@ -53,8 +54,8 @@ public class DashBeatsKnowledgeBaseTest {
 
     @Before
     public void setUp() {
-        this.url = "http://localhost:3030";
-        this.authToken = "YOUR_AUTH_TOKEN";
+        this.url = DashBeatsPublisher.DEFAULT_URL;
+        this.authToken = DashBeatsPublisher.DEFAULT_AUTH_TOKEN;
         kb = new DashBeatsKnowledgeBase(url, authToken);
         kb.start();
         factory = new StatisticsMockFactory();

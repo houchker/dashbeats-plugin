@@ -21,19 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.ericsson.jenkins.plugins.dashbeats.db;
+package com.ericsson.jenkins.plugins.dashbeats.client;
 
 
-import com.ericsson.jenkins.plugins.dashbeats.client.DashBeatsPublisher;
-import com.ericsson.jenkins.plugins.dashbeats.client.DashBeatsRestClient;
-import com.ericsson.jenkins.plugins.dashbeats.client.WidgetType;
+import com.ericsson.jenkins.plugins.dashbeats.db.SummaryMockFactory;
 import com.ericsson.jenkins.plugins.dashbeats.json.JsonFactory;
 import com.ericsson.jenkins.plugins.dashbeats.model.StatsSummary;
+import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by ekongto on 2014-09-08.
@@ -47,16 +48,20 @@ public class DashBeatsPublisherTest {
     private String authToken;
     private StatsSummary statsSummary;
     private DashBeatsPublisher publisher;
+    private DashBeatsClient client;
+    private JsonFactory jsonFactory;
 
     @Before
     public void setUp() {
         startDate = new Date();
         lastDate = new Date();
         buildCount = 1;
-        this.url = "http://localhost:3030";
-        this.authToken = "YOUR_AUTH_TOKEN";
+        this.url = DashBeatsPublisher.DEFAULT_URL;
+        this.authToken = DashBeatsPublisher.DEFAULT_AUTH_TOKEN;
         this.statsSummary = SummaryMockFactory.createSummary(startDate, lastDate);
-        this.publisher = new DashBeatsPublisher(url, new DashBeatsRestClient(), new JsonFactory(authToken));
+        client = Mockito.mock(DashBeatsClient.class);
+        jsonFactory = new JsonFactory(authToken);
+        this.publisher = new DashBeatsPublisher(url, client, jsonFactory);
     }
 
     /**
@@ -69,7 +74,12 @@ public class DashBeatsPublisherTest {
      */
     @Test
     public void shouldSendWelcomeSuccessfully() {
+        //GIVEN
+        JSONObject json = jsonFactory.createWelcome();
+        //WHEN
+        Mockito.when(client.post(url + DashBeatsPublisher.WELCOME_PATH, json)).thenReturn(204);
         int code = publisher.publish(WidgetType.WELCOME, statsSummary);
+        //THEN
         Assert.assertEquals(204, code);
     }
 
@@ -83,7 +93,14 @@ public class DashBeatsPublisherTest {
      */
     @Test
     public void shouldSendCommonFaultCausesSuccessfully() throws Exception {
+        //GIVEN
+        List<JSONObject> data = jsonFactory.createCommonFaultCauses(statsSummary);
+        JSONObject jsonObject = jsonFactory.createJson();
+        jsonObject.put("items", data);
+        //WHEN
+        Mockito.when(client.post(url + DashBeatsPublisher.COMMON_FAULT_CAUSES_PATH, jsonObject)).thenReturn(204);
         int code = publisher.publish(WidgetType.COMMON_FAULT_CAUSES, statsSummary);
+        //THEN
         Assert.assertEquals(204, code);
     }
 
@@ -97,7 +114,14 @@ public class DashBeatsPublisherTest {
      */
     @Test
     public void shouldSendLatestFailedBuildsSuccessfully() throws Exception {
+        //GIVEN
+        List<JSONObject> data = jsonFactory.createLatestFailedBuilds(statsSummary);
+        JSONObject jsonObject = jsonFactory.createJson();
+        jsonObject.put("items", data);
+        //WHEN
+        Mockito.when(client.post(url + DashBeatsPublisher.LATEST_FAILED_BUILDS_PATH, jsonObject)).thenReturn(204);
         int code = publisher.publish(WidgetType.LATEST_FAILED_BUILDS, statsSummary);
+        //THEN
         Assert.assertEquals(204, code);
     }
 
@@ -111,7 +135,14 @@ public class DashBeatsPublisherTest {
      */
     @Test
     public void shouldSendLatestBuildsSuccessfully() throws Exception {
+        //GIVEN
+        List<JSONObject> data = jsonFactory.createLatestBuilds(statsSummary);
+        JSONObject jsonObject = jsonFactory.createJson();
+        jsonObject.put("items", data);
+        //WHEN
+        Mockito.when(client.post(url + DashBeatsPublisher.LATEST_BUILDS_PATH, jsonObject)).thenReturn(204);
         int code = publisher.publish(WidgetType.LATEST_BUILD, statsSummary);
+        //THEN
         Assert.assertEquals(204, code);
     }
 
@@ -125,7 +156,14 @@ public class DashBeatsPublisherTest {
      */
     @Test
     public void shouldSendTopFailedJobsSuccessfully() throws Exception {
+        //GIVEN
+        List<JSONObject> data = jsonFactory.createTopFailedJobs(statsSummary);
+        JSONObject jsonObject = jsonFactory.createJson();
+        jsonObject.put("items", data);
+        //WHEN
+        Mockito.when(client.post(url + DashBeatsPublisher.TOP_FAILED_JOBS_PATH, jsonObject)).thenReturn(204);
         int code = publisher.publish(WidgetType.TOP_FAILED_JOBS, statsSummary);
+        //THEN
         Assert.assertEquals(204, code);
     }
 
@@ -137,7 +175,10 @@ public class DashBeatsPublisherTest {
      */
     @Test
     public void testPing() {
+        //WHEN
+        Mockito.when(client.ping(url)).thenReturn(200);
         int code = publisher.ping();
+        //THEN
         Assert.assertEquals(200, code);
     }
 }

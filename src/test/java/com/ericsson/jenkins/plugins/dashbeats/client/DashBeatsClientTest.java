@@ -25,41 +25,33 @@ package com.ericsson.jenkins.plugins.dashbeats.client;
 
 import hudson.model.Result;
 import net.sf.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
  * Created by ekongto on 2014-09-08.
  */
-public class DashBeatsRestClientTest {
-
+public class DashBeatsClientTest {
     private String url;
     private String authToken;
-
     private String welcomeUrl;
     private String commonFaultCausesUrl;
     private String latestBuildsUrl;
     private String latestFailedBuildsUrl;
     private String topFailedJobsUrl;
-
-    private DashBeatsRestClient client = new DashBeatsRestClient();
+    private DashBeatsClient client = new DashBeatsClient();
 
     @Before
     public void setUp() {
-        url = "http://localhost:3030";
-        authToken = "YOUR_AUTH_TOKEN";
-        this.welcomeUrl = url + "/widgets/welcome";
-        this.commonFaultCausesUrl = url + "/widgets/common_fault_causes";
-        this.latestBuildsUrl = url + "/widgets/latest_builds";
-        this.latestFailedBuildsUrl = url + "/widgets/latest_failed_builds";
-        this.topFailedJobsUrl = url + "/widgets/top_failed_jobs";
+        url = DashBeatsPublisher.DEFAULT_URL;
+        authToken = DashBeatsPublisher.DEFAULT_AUTH_TOKEN;
+        this.welcomeUrl = url  + DashBeatsPublisher.WELCOME_PATH;
+        this.commonFaultCausesUrl = url + DashBeatsPublisher.COMMON_FAULT_CAUSES_PATH;
+        this.latestBuildsUrl = url + DashBeatsPublisher.LATEST_BUILDS_PATH;
+        this.latestFailedBuildsUrl = url + DashBeatsPublisher.LATEST_FAILED_BUILDS_PATH;
+        this.topFailedJobsUrl = url + DashBeatsPublisher.TOP_FAILED_JOBS_PATH;
     }
-
 
     /**
      * GIVEN a url of the DashBeats server
@@ -88,13 +80,13 @@ public class DashBeatsRestClientTest {
      */
     @Test
     public void shouldFailSendingWelcomeGettingUnauthorizedCode() {
-        DashBeatsRestClient client = new DashBeatsRestClient();
+        DashBeatsClient client = new DashBeatsClient();
 
         url = "http://localhost:3030/widgets/welcome";
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("auth_token", "Wrong token");
-        jsonObject.put("text", "Hello JerseyRest");
+        jsonObject.put("text", "Hello Jersey");
         int code = client.post(url, jsonObject);
         Assert.assertEquals(401, code);
     }
@@ -109,13 +101,13 @@ public class DashBeatsRestClientTest {
      */
     @Test
     public void shouldFailSendingWelcomeWithBadUrl() {
-        DashBeatsRestClient client = new DashBeatsRestClient();
+        DashBeatsClient client = new DashBeatsClient();
 
         url = "http://localhost:3333/widgets/welcome";
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("auth_token", "YOUR_AUTH_TOKEN");
-        jsonObject.put("text", "Hello JerseyRest");
+        jsonObject.put("text", "Hello Jersey");
         int code = client.post(url, jsonObject);
         Assert.assertEquals(400, code);
     }
@@ -251,7 +243,7 @@ public class DashBeatsRestClientTest {
      */
     @Test
     public void shouldPingSuccessfully() {
-        DashBeatsRestClient client = new DashBeatsRestClient();
+        DashBeatsClient client = new DashBeatsClient();
         int code = client.ping(url);
         Assert.assertEquals(200, code);
     }
@@ -265,8 +257,7 @@ public class DashBeatsRestClientTest {
     @Test
     public void shouldFailPinging() {
         url = "http://localhost:3000";
-
-        DashBeatsRestClient client = new DashBeatsRestClient();
+        DashBeatsClient client = new DashBeatsClient();
         int code = client.ping(url);
         Assert.assertEquals(400, code);
     }

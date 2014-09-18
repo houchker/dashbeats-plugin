@@ -34,27 +34,27 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
 /**
- * Implementation of a Rest client to push data to DashBeats server
+ * Implementation of a client to push data to DashBeats server
  * <p/>
  * Created by ekongto on 2014-09-08.
  */
-public class DashBeatsRestClient implements RestClient {
+public class DashBeatsClient implements DashingClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DashBeatsRestClient.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(DashBeatsClient.class.getName());
 
     private static final int BAD_REQUEST = 400;
 
     private Client client;
 
     /**
-     * Constructor of the rest client
+     * Constructor of the client
      */
-    public DashBeatsRestClient() {
+    public DashBeatsClient() {
         client = ClientBuilder.newClient().register(JacksonFeature.class);
     }
 
     /**
-     * Post method to publish data to Dashing Rest API.
+     * Post method to publish data to Dashing API.
      * Dashng API expect to receive string in json format.
      * <p/>
      * <p>e.g. Welcome widget expects :
@@ -69,6 +69,7 @@ public class DashBeatsRestClient implements RestClient {
      * @param jsonObject
      * @return response code
      */
+    @Override
     public int post(String url, JSONObject jsonObject) {
 
         try {
@@ -79,7 +80,7 @@ public class DashBeatsRestClient implements RestClient {
 
             return response.getStatus();
         } catch (Exception e) {
-            LOGGER.error("Exception caught while doing a post to DashBeats server: " + e);
+            LOGGER.info("Exception caught while doing a post to DashBeast server:" + e);
         }
 
         return BAD_REQUEST;
