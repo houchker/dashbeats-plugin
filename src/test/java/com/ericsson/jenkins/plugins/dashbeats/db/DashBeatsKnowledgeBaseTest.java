@@ -56,6 +56,7 @@ public class DashBeatsKnowledgeBaseTest {
         this.url = "http://localhost:3030";
         this.authToken = "YOUR_AUTH_TOKEN";
         kb = new DashBeatsKnowledgeBase(url, authToken);
+        kb.start();
         factory = new StatisticsMockFactory();
     }
 

@@ -286,23 +286,26 @@ public class DashBeatsStore {
      */
     private List<BuildInfo> getTopFailedJobs() {
         // once all builds info are gathered and unique, sort them
-        Map<Integer, List<BuildInfo>> latestBuilds = new TreeMap<Integer, List<BuildInfo>>();
+        Map<Integer, Map<Date, BuildInfo>> failedBuilds = new TreeMap<Integer, Map<Date, BuildInfo>>();
         for (BuildInfo buildInfo : buildInfoStore.values()) {
-            if (!latestBuilds.containsKey(buildInfo.getFailures())) {
-                latestBuilds.put(buildInfo.getFailures(), new ArrayList<BuildInfo>());
+            if (!failedBuilds.containsKey(buildInfo.getFailures())) {
+                failedBuilds.put(buildInfo.getFailures(), new TreeMap<Date, BuildInfo>());
             }
-            if (Result.FAILURE.toString().equals(buildInfo.getResult())) {
-                latestBuilds.get(buildInfo.getFailures()).add(buildInfo);
-            }
+            failedBuilds.get(buildInfo.getFailures()).put(buildInfo.getDate(), buildInfo);
         }
         // use reverse order to have most recent on top
-        latestBuilds = ((TreeMap) latestBuilds).descendingMap();
+        failedBuilds = ((TreeMap) failedBuilds).descendingMap();
         // prepare a list with a MAX number of fault causes
         List<BuildInfo> list = new ArrayList<BuildInfo>();
-        for (List<BuildInfo> item : latestBuilds.values()) {
-            for (BuildInfo buildInfo: item) {
+        // from top most failed jobs, add to the list to be returned
+        for (Map<Date, BuildInfo> subList : failedBuilds.values()) {
+            Collection<BuildInfo> topFailedJobs = ((TreeMap) subList).descendingMap().values();
+            // sort by latest if same number of failures
+            for (BuildInfo buildInfo: topFailedJobs) {
                 if (list.size() < StatsSummary.MAX_PER_LIST) {
-                    list.add(buildInfo);
+                    if (buildInfo.getFailures() > 0) {
+                        list.add(buildInfo);
+                    }
                 } else {
                     break;
                 }

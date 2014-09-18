@@ -212,49 +212,11 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
             if (list.size() >= limit) {
                 break;
             }
-            if(isToBeIncluded(stat, filter)) {
+            if(StatsFilterUtil.isIncluded(stat, filter)) {
                 list.add(stat);
             }
         }
         return list;
-    }
-
-    private boolean isToBeIncluded(Statistics stat, GraphFilterBuilder filter) {
-        Pattern pattern;
-        // exclude matcing result
-        pattern = Pattern.compile(".*" + filter.getExcludeResult() + ".*");
-        if (filter.getExcludeResult() != null && pattern.matcher(stat.getResult()).find()) {
-            return false;
-        }
-        //include matching job name
-        pattern = Pattern.compile(".*" + filter.getProjectName() + ".*");
-        if (filter.getProjectName() != null && !pattern.matcher(stat.getProjectName()).find()) {
-            return false;
-        }
-        // include matching result
-        pattern = Pattern.compile(".*" + filter.getResult() + ".*");
-        if (filter.getResult() != null && !pattern.matcher(stat.getResult()).find()) {
-            return false;
-        }
-        // include matching master name
-        pattern = Pattern.compile(".*" + filter.getMasterName() + ".*");
-        if (filter.getMasterName() != null && !pattern.matcher(stat.getMaster()).find()) {
-            return false;
-        }
-        // include matching slave name
-        pattern = Pattern.compile(".*" + filter.getSlaveName() + ".*");
-        if (filter.getSlaveName() != null && !pattern.matcher(stat.getSlaveHostName()).find()) {
-            return false;
-        }
-        // include if build number in the filter list
-        if (filter.getBuildNumbers() != null && !filter.getBuildNumbers().contains(stat.getBuildNumber())) {
-            return false;
-        }
-        // include if start date is after the date in filter
-        if (filter.getSince() != null && !filter.getSince().before(stat.getStartingTime())) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -339,7 +301,6 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
         public FormValidation doTestConnection(
                 @QueryParameter("url") final String paramUrl,
                 @QueryParameter("authToken") final String paramAuthToken) {
-
             try {
                 new DashBeatsPublisher(paramUrl, new DashBeatsRestClient(), new JsonFactory(paramAuthToken)).publishWelcome();
             } catch (Exception e) {
