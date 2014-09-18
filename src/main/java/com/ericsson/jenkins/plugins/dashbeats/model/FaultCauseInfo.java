@@ -44,7 +44,7 @@ public class FaultCauseInfo {
      * @param causeId
      */
     public FaultCauseInfo(Date date, String causeId) {
-        this.date = date;
+        this.date = (Date)date.clone();
         this.causeId = causeId;
         categories = new ArrayList<String>();
         if (causeId != null && !"".equals(causeId)) {
@@ -57,7 +57,7 @@ public class FaultCauseInfo {
      * @return
      */
     public Date getDate() {
-        return date;
+        return (Date)date.clone();
     }
 
     /**
@@ -65,7 +65,7 @@ public class FaultCauseInfo {
      * @param date
      */
     public void setDate(Date date) {
-        this.date = date;
+        this.date = (Date)date.clone();
     }
 
     /**

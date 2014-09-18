@@ -51,7 +51,7 @@ public class BuildInfo {
      * @param result
      */
     public BuildInfo(Date date, String job, int buildNumber, String result) {
-        this.date = date;
+        this.date = (Date)date.clone();
         this.job = job;
         this.buildNumber = buildNumber;
         this.result = result;
@@ -62,7 +62,7 @@ public class BuildInfo {
      * @return
      */
     public Date getDate() {
-        return date;
+        return (Date)date.clone();
     }
 
     /**
@@ -70,7 +70,7 @@ public class BuildInfo {
      * @param date
      */
     public void setDate(Date date) {
-        this.date = date;
+        this.date = (Date)date.clone();
     }
 
     /**

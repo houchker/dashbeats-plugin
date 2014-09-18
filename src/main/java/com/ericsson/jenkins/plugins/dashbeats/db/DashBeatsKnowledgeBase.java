@@ -65,6 +65,8 @@ import java.util.regex.Pattern;
  */
 public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
 
+    private static final long serialVersionUID = -1918763687924456392L;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DashBeatsKnowledgeBase.class.getName());
 
     private static final String DEFAULT_URL = "http://localhost:3030";
@@ -148,6 +150,21 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
     @Override
     public void stop() {
         //when the BFA stops
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof KnowledgeBase) {
+            return hashCode() == other.hashCode();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        //Making checkstyle happy.
+        return getClass().getName().hashCode();
     }
 
     /**

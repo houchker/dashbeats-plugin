@@ -60,8 +60,8 @@ public class StatsSummary {
      * @param buildCount
      */
     public StatsSummary(Date startDate, Date lastDate, int buildCount) {
-        this.startDate = startDate;
-        this.lastDate = lastDate;
+        this.startDate = (Date) startDate.clone();
+        this.lastDate = (Date) lastDate.clone();
         this.buildCount = buildCount;
     }
 
@@ -70,7 +70,7 @@ public class StatsSummary {
      * @return
      */
     public Date getStartDate() {
-        return startDate;
+        return (Date)startDate.clone();
     }
 
     /**
@@ -78,7 +78,7 @@ public class StatsSummary {
      * @param startDate
      */
     public void setStartDate(Date startDate) {
-        this.startDate = startDate;
+        this.startDate = (Date)startDate.clone();
     }
 
     /**
@@ -86,7 +86,7 @@ public class StatsSummary {
      * @return
      */
     public Date getLastDate() {
-        return lastDate;
+        return (Date)lastDate.clone();
     }
 
     /**
@@ -94,7 +94,7 @@ public class StatsSummary {
      * @param lastDate
      */
     public void setLastDate(Date lastDate) {
-        this.lastDate = lastDate;
+        this.lastDate = (Date)lastDate.clone();
     }
 
     /**

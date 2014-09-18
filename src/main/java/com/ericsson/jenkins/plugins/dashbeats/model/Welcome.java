@@ -42,8 +42,8 @@ public class Welcome {
      * @param lastDate
      */
     public Welcome(String text, Date startDate, Date lastDate) {
-        this.startDate = startDate;
-        this.lastDate = lastDate;
+        this.startDate = (Date)startDate.clone();
+        this.lastDate = (Date)lastDate.clone();
         setText(text);
     }
 
