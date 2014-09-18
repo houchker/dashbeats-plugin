@@ -185,15 +185,19 @@ public class DashBeatsKnowledgeBase extends LocalFileKnowledgeBase {
             loadStore(getCauses());
         }
         // use job name and build number as unique key
-        statsStore.put(stat.getProjectName() + "#" + stat.getBuildNumber(), stat);
-        // persist the stats store into file
-        saveStore();
-        // update the DashBeats store
-        store.update(stat, getCauses());
-        // create the stat summary to be pubilished
-        StatsSummary statSummary = store.createSummary();
-        // publish
-        publisher.publish(statSummary);
+        String key = stat.getProjectName() + "#" + stat.getBuildNumber();
+        // update DashBeatsStore and publish only for new stats
+        if (!statsStore.containsKey(key)) {
+            statsStore.put(key, stat);
+            // persist the stats store into file
+            saveStore();
+            // update the DashBeats store
+            store.update(stat, getCauses());
+            // create the stat summary to be published
+            StatsSummary statSummary = store.createSummary();
+            // publish
+            publisher.publish(statSummary);
+        }
     }
 
     /**
