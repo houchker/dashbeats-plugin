@@ -3,6 +3,8 @@ package com.ericsson.jenkins.plugins.dashbeats.db;
 import com.sonyericsson.jenkins.plugins.bfa.graphs.GraphFilterBuilder;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -59,28 +61,20 @@ public class StatsFilterUtil {
             return false;
         }
         // matching criteria
-        if (!isMatched(filter.getProjectName(), stat.getProjectName())) {
-            return false;
-        }
-        // matching result
-        if (!isMatched(filter.getResult(), stat.getResult())) {
-            return false;
-        }
-        //matching master name
-        if (!isMatched(filter.getMasterName(), stat.getMaster())) {
-            return false;
-        }
-        // matching slave name
-        if (!isMatched(filter.getSlaveName(), stat.getSlaveHostName())) {
-            return false;
-        }
-        // build number is within the filter
-        if (filter.getBuildNumbers() != null && !filter.getBuildNumbers().contains(stat.getBuildNumber())) {
-            return false;
-        }
-        // matching date range
-        if (filter.getSince() != null && !filter.getSince().before(stat.getStartingTime())) {
-            return false;
+        List<Boolean> matches = new ArrayList<Boolean>();
+        matches.add(isMatched(filter.getProjectName(), stat.getProjectName()));
+        matches.add(isMatched(filter.getResult(), stat.getResult()));
+        matches.add(isMatched(filter.getMasterName(), stat.getMaster()));
+        matches.add(isMatched(filter.getSlaveName(), stat.getSlaveHostName()));
+        matches.add(!(filter.getBuildNumbers() != null && !filter.getBuildNumbers().contains(stat.getBuildNumber())));
+        matches.add(!(filter.getSince() != null && !filter.getSince().before(stat.getStartingTime())));
+
+        Iterator<Boolean> it = matches.iterator();
+        while (it.hasNext()) {
+            Boolean match = it.next();
+            if (!match) {
+                return false;
+            }
         }
         return true;
     }

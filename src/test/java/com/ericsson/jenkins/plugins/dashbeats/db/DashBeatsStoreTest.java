@@ -23,7 +23,6 @@
  */
 package com.ericsson.jenkins.plugins.dashbeats.db;
 
-
 import com.ericsson.jenkins.plugins.dashbeats.model.*;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
 import hudson.model.Result;
@@ -94,8 +93,6 @@ public class DashBeatsStoreTest {
     public void shouldCreateSummarySuccessfully() throws Exception {
 
         //GIVEN
-        JSONObject jsonObject = new JSONObject();
-
         List<Statistics> statsList = factory.createStatisticsBatch();
         for (Statistics stat: statsList) {
             store.update(stat, factory.createFailureCauses());

@@ -24,13 +24,17 @@
 package com.ericsson.jenkins.plugins.dashbeats.json;
 
 import com.ericsson.jenkins.plugins.dashbeats.model.*;
+
 import net.sf.json.JSONObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import jenkins.model.Jenkins;
 
 /**
  * JsonFactory creates json objects by extracting data from a stat summary.
@@ -88,9 +92,9 @@ public class JsonFactory {
         for (FaultCauseInfo data : summary.getCommonFaultCauses()) {
             jsonObject = createJson();
             StringBuilder jsonContent = new StringBuilder("")
-                    .append(data.getCauseName()).append("  ")
-                    .append(" (").append(data.getCategoriesAsString()).append(")")
-                    .append(" failures(").append(data.getFailures()).append(")");
+            .append(data.getCauseName()).append("  ")
+            .append(" (").append(data.getCategoriesAsString()).append(")")
+            .append(" failures(").append(data.getFailures()).append(")");
             jsonObject.put("label", jsonContent.toString());
             list.add(jsonObject);
             LOGGER.debug("Created a common fault cause content : {}", jsonObject);
@@ -108,11 +112,9 @@ public class JsonFactory {
         JSONObject jsonObject;
         for (BuildInfo data : summary.getLatestFailedBuilds()) {
             jsonObject = createJson();
-            StringBuilder jsonContent = new StringBuilder("")
-                    .append(data.getJob())
-                    .append("  #").append(data.getBuildNumber())
-                    .append("  failures(").append(data.getFailures()).append(")");
-            jsonObject.put("label", jsonContent.toString());
+            jsonObject.put("col1", data.getJob());
+            jsonObject.put("col2", "#" + data.getBuildNumber());
+            jsonObject.put("url", Jenkins.getInstance().getRootUrl() + "/job/" + data.getJob() + "/" + data.getBuildNumber());
             list.add(jsonObject);
             LOGGER.debug("Created a latest failed build content : {}", jsonObject);
         }
@@ -130,16 +132,18 @@ public class JsonFactory {
         for (BuildInfo data : summary.getLatestBuilds()) {
             jsonObject = createJson();
             StringBuilder jsonContent = new StringBuilder("")
-                    .append(data.getJob())
-                    .append("  #").append(data.getBuildNumber())
-                    .append("  ").append(data.getResult())
-                    .append("  total(").append(data.getTotal()).append(")")
-                    .append("  successes(").append(data.getSuccesses()).append(")")
-                    .append("  failures(").append(data.getFailures()).append(")")
-                    .append("  unstables(").append(data.getUnstables()).append(")")
-                    .append("  aborts(").append(data.getAborts()).append(")")
-                    .append("  fail rate(").append(data.getRateOfFailure()).append("%)");
-            jsonObject.put("label", jsonContent.toString());
+            .append(data.getJob())
+            .append("  #").append(data.getBuildNumber())
+            .append("  ").append(data.getResult())
+            .append("  total(").append(data.getTotal()).append(")")
+            .append("  successes(").append(data.getSuccesses()).append(")")
+            .append("  failures(").append(data.getFailures()).append(")")
+            .append("  unstables(").append(data.getUnstables()).append(")")
+            .append("  aborts(").append(data.getAborts()).append(")")
+            .append("  fail rate(").append(data.getRateOfFailure()).append("%)");
+            jsonObject.put("col1", jsonContent.toString());
+            jsonObject.put("col2", "");
+            jsonObject.put("url", Jenkins.getInstance().getRootUrl() + "/job/" + data.getJob() + "/" + data.getBuildNumber());
             list.add(jsonObject);
             LOGGER.debug("Created a latest build content : {}", jsonObject);
         }
@@ -157,11 +161,9 @@ public class JsonFactory {
         JSONObject jsonObject;
         for (BuildInfo data : summary.getTopFailedJobs()) {
             jsonObject = createJson();
-            StringBuilder jsonContent = new StringBuilder("")
-                    .append(data.getJob())
-                    .append("  #").append(data.getBuildNumber())
-                    .append("  failures(").append(data.getFailures()).append(")");
-            jsonObject.put("label", jsonContent.toString());
+            jsonObject.put("col1", data.getJob());
+            jsonObject.put("col2", "failures(" + data.getFailures() + ")");
+            jsonObject.put("url", Jenkins.getInstance().getRootUrl() + "/job/" + data.getJob() + "/");
             list.add(jsonObject);
             LOGGER.debug("Created a top failed build content : {}", jsonObject);
         }

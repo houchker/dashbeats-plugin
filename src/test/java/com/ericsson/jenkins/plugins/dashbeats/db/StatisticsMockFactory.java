@@ -186,7 +186,7 @@ public class StatisticsMockFactory {
         failureCause.addIndication(indication2);
         failureCause.addIndication(indication3);
 
-        AbstractBuild build = Mockito.mock(AbstractBuild.class);
+        AbstractBuild<?, ?> build = Mockito.mock(AbstractBuild.class);
         FoundIndication foundIndication1 = new FoundIndication(build, "pattern1", "matching file", "matching string");
         FoundIndication foundIndication2 = new FoundIndication(build, "pattern2", "matching file", "matching string 2");
 
