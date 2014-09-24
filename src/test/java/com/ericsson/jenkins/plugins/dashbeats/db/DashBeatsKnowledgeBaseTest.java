@@ -23,16 +23,22 @@
  */
 package com.ericsson.jenkins.plugins.dashbeats.db;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+
 import com.ericsson.jenkins.plugins.dashbeats.client.DashBeatsPublisher;
+import com.ericsson.jenkins.plugins.dashbeats.db.DashBeatsKnowledgeBase.DashBeatsDescriptor;
 import com.sonyericsson.jenkins.plugins.bfa.graphs.GraphFilterBuilder;
 import com.sonyericsson.jenkins.plugins.bfa.statistics.Statistics;
+
 import hudson.model.Result;
+import hudson.util.FormValidation;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,6 +68,27 @@ public class DashBeatsKnowledgeBaseTest {
     }
 
     /**
+     * Given an instance of KnowledgeBase
+     * When equals is used with another KnowledgeBase instance
+     * Then it should return true
+     */
+    @Test
+    public void equalsForKnowledgeBaseShouldWork() throws Exception {
+        Assert.assertEquals(true , kb.equals(new DashBeatsKnowledgeBase(url, authToken)));
+    }
+
+    /**
+     * Given an instance of KnowledgeBase as an Object
+     * When equals is used with another KnowledgeBase instance
+     * Then it should return true
+     */
+    @Test
+    public void equalsForObjectShouldWork() throws Exception {
+        Object obj = new DashBeatsKnowledgeBase(url, authToken);
+        Assert.assertEquals(true , kb.equals(obj));
+    }
+
+    /**
      * GIVEN an empty DashBeats store
      * WHEN updating the store using statistics object
      * THEN the store is updated successfully
@@ -69,7 +96,6 @@ public class DashBeatsKnowledgeBaseTest {
      */
     @Test
     public void shouldStartSuccessfully() throws Exception {
-        Statistics stat = factory.createStatistics(new Date(), "jobTest1", 1, Result.SUCCESS.toString());
         kb.start();
         Assert.assertEquals(true, kb.isStatisticsEnabled());
         Assert.assertEquals(true, kb.isSuccessfulLoggingEnabled());
@@ -189,5 +215,22 @@ public class DashBeatsKnowledgeBaseTest {
         filter.setResult(Result.SUCCESS.toString());
         filter.setSince(new Date(stat1.getStartingTime().getTime() - 1000));
         Assert.assertEquals(1, kb.getStatistics(filter, 1).size());
+    }
+
+    /**
+     * Simple form validation for DashBeatsDescriptor
+     */
+    @Test
+    public void shouldPassFormValidation() throws Exception {
+        DashBeatsDescriptor descriptor = new DashBeatsKnowledgeBase.DashBeatsDescriptor();
+        assertNotNull(descriptor);
+        assertSame(FormValidation.Kind.OK, descriptor.doCheckUrl("http://localhost:3030").kind);
+        assertSame(FormValidation.Kind.OK, descriptor.doCheckAuthToken("ABC").kind);
+
+        assertSame(FormValidation.Kind.ERROR, descriptor.doCheckUrl(null).kind);
+        assertSame(FormValidation.Kind.ERROR, descriptor.doCheckAuthToken(null).kind);
+
+        assertSame(FormValidation.Kind.ERROR, descriptor.doCheckUrl(" contains spaces").kind);
+        assertSame(FormValidation.Kind.ERROR, descriptor.doCheckAuthToken(" contains spaces").kind);
     }
 }

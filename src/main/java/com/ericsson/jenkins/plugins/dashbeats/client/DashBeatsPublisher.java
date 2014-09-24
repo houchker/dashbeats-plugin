@@ -29,6 +29,8 @@ import net.sf.json.JSONObject;
 
 import java.util.List;
 
+import jenkins.model.Jenkins;
+
 /**
  * This Class is responsible to publish data to the DashBeats server. It publish
  * Jenkins BFA Stats to every widget within the dashboard.
@@ -51,6 +53,7 @@ public class DashBeatsPublisher implements StatsPublisher {
     public static final String LATEST_BUILDS_PATH = "/widgets/latest_builds";
     public static final String LATEST_FAILED_BUILDS_PATH = "/widgets/latest_failed_builds";
     public static final String TOP_FAILED_JOBS_PATH = "/widgets/top_failed_jobs";
+    public static final String CONFIGURE_FAILURE_CAUSES_URL = "/widgets/configure_common_causes";
 
     /* The url of DashBeats */
     private String url;
@@ -67,6 +70,8 @@ public class DashBeatsPublisher implements StatsPublisher {
     private String latestFailedBuildsUrl;
     /* The url of the top failed jobs widget on DashBeats */
     private String topFailedJobsUrl;
+    /* The url of the configure link widget on DashBeats */
+    private String configureFailureCausesUrl;
 
     /*The client used to post data to DashBeats */
     private DashingClient client;
@@ -87,6 +92,7 @@ public class DashBeatsPublisher implements StatsPublisher {
         this.latestBuildsUrl = url + LATEST_BUILDS_PATH;
         this.latestFailedBuildsUrl = url + LATEST_FAILED_BUILDS_PATH;
         this.topFailedJobsUrl = url + TOP_FAILED_JOBS_PATH;
+        this.configureFailureCausesUrl = url + CONFIGURE_FAILURE_CAUSES_URL;
     }
 
     /**
@@ -119,6 +125,7 @@ public class DashBeatsPublisher implements StatsPublisher {
         publish(WidgetType.LATEST_FAILED_BUILDS, summary);
         publish(WidgetType.LATEST_BUILD, summary);
         publish(WidgetType.TOP_FAILED_JOBS, summary);
+        publish(WidgetType.CONFIGURE_FAILURE_CAUSES, summary);
     }
 
     /**
@@ -128,34 +135,37 @@ public class DashBeatsPublisher implements StatsPublisher {
      * @param summary
      * @return
      */
-    public int publish(WidgetType type, StatsSummary summary) {
+    public synchronized int publish(WidgetType type, StatsSummary summary) {
 
         int code = 400;
         List<JSONObject> data;
 
         switch (type) {
-            case WELCOME:
-                JSONObject json = jsonFactory.createWelcome();
-                code = publishWelcome(json);
-                break;
-            case COMMON_FAULT_CAUSES:
-                data = jsonFactory.createCommonFaultCauses(summary);
-                code = publishCommonFaultCauses(data);
-                break;
-            case LATEST_FAILED_BUILDS:
-                data = jsonFactory.createLatestFailedBuilds(summary);
-                code = publishLatestFailedBuilds(data);
-                break;
-            case LATEST_BUILD:
-                data = jsonFactory.createLatestBuilds(summary);
-                code = publishLatestBuilds(data);
-                break;
-            case TOP_FAILED_JOBS:
-                data = jsonFactory.createTopFailedJobs(summary);
-                code = publishTopFailedJobs(data);
-                break;
-            default:
-                break;
+        case WELCOME:
+            JSONObject json = jsonFactory.createWelcome();
+            code = publishWelcome(json);
+            break;
+        case COMMON_FAULT_CAUSES:
+            data = jsonFactory.createCommonFaultCauses(summary);
+            code = publishCommonFaultCauses(data);
+            break;
+        case LATEST_FAILED_BUILDS:
+            data = jsonFactory.createLatestFailedBuilds(summary);
+            code = publishLatestFailedBuilds(data);
+            break;
+        case LATEST_BUILD:
+            data = jsonFactory.createLatestBuilds(summary);
+            code = publishLatestBuilds(data);
+            break;
+        case TOP_FAILED_JOBS:
+            data = jsonFactory.createTopFailedJobs(summary);
+            code = publishTopFailedJobs(data);
+            break;
+        case CONFIGURE_FAILURE_CAUSES:
+            code = publishConfigureFailureCauses();
+            break;
+        default:
+            break;
         }
 
         return code;
@@ -218,4 +228,15 @@ public class DashBeatsPublisher implements StatsPublisher {
         return client.post(topFailedJobsUrl, jsonObject);
     }
 
+    /**
+     * Send configure link to the top failed jobs widget
+     * @param data
+     * @return response code
+     */
+    private int publishConfigureFailureCauses() {
+        JSONObject jsonObject = jsonFactory.createJson();
+        jsonObject.put("url", Jenkins.getInstance().getRootUrl() + "/failure-cause-management/");
+        jsonObject.put("text", "Configure Failure Causes");
+        return client.post(configureFailureCausesUrl, jsonObject);
+    }
 }

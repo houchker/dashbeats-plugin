@@ -27,10 +27,14 @@ package com.ericsson.jenkins.plugins.dashbeats.client;
 import com.ericsson.jenkins.plugins.dashbeats.db.SummaryMockFactory;
 import com.ericsson.jenkins.plugins.dashbeats.json.JsonFactory;
 import com.ericsson.jenkins.plugins.dashbeats.model.StatsSummary;
+
 import net.sf.json.JSONObject;
+
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;
 
 import java.util.Date;
@@ -43,7 +47,6 @@ public class DashBeatsPublisherTest {
 
     private Date startDate;
     private Date lastDate;
-    private int buildCount;
     private String url;
     private String authToken;
     private StatsSummary statsSummary;
@@ -51,11 +54,13 @@ public class DashBeatsPublisherTest {
     private DashBeatsClient client;
     private JsonFactory jsonFactory;
 
+    @Rule
+    public JenkinsRule rule = new JenkinsRule();
+
     @Before
     public void setUp() {
         startDate = new Date();
         lastDate = new Date();
-        buildCount = 1;
         this.url = DashBeatsPublisher.DEFAULT_URL;
         this.authToken = DashBeatsPublisher.DEFAULT_AUTH_TOKEN;
         this.statsSummary = SummaryMockFactory.createSummary(startDate, lastDate);
