@@ -1,0 +1,6 @@
+
+com.ericsson.jenkins.plugins.dashbeats
+com.ericsson.jenkins.plugins.dashbeats.client
+com.ericsson.jenkins.plugins.dashbeats.db
+com.ericsson.jenkins.plugins.dashbeats.json
+com.ericsson.jenkins.plugins.dashbeats.model

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.7" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
+  associations="true" dependencies="false" nesting-relationships="true">  
+  <package id="1" language="java" name="com.ericsson.jenkins.plugins.dashbeats.json" project="dashbeats-plugin" 
+    file="/dashbeats-plugin/src/main/java/com/ericsson/jenkins/plugins/dashbeats/json" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="88" width="307" x="352" y="458"/>    
+    <display autosize="false" stereotype="true" sort-features="false" accessors="true"/>  
+  </package>  
+  <package id="2" language="java" name="com.ericsson.jenkins.plugins.dashbeats.client" project="dashbeats-plugin" 
+    file="/dashbeats-plugin/src/main/java/com/ericsson/jenkins/plugins/dashbeats/client" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="116" width="287" x="89" y="262"/>    
+    <display autosize="false" stereotype="true" sort-features="false" accessors="true"/>  
+  </package>  
+  <package id="3" language="java" name="com.ericsson.jenkins.plugins.dashbeats.model" project="dashbeats-plugin" 
+    file="/dashbeats-plugin/src/main/java/com/ericsson/jenkins/plugins/dashbeats/model" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="88" width="291" x="351" y="79"/>    
+    <display autosize="false" stereotype="true" sort-features="false" accessors="true"/>  
+  </package>  
+  <package id="4" language="java" name="com.ericsson.jenkins.plugins.dashbeats.db" project="dashbeats-plugin" 
+    file="/dashbeats-plugin/src/main/java/com/ericsson/jenkins/plugins/dashbeats/db" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="92" width="288" x="611" y="277"/>    
+    <display autosize="false" stereotype="true" sort-features="false" accessors="true"/>  
+  </package>  
+  <dependency id="5">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="3"/>  
+  </dependency>  
+  <dependency id="6">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="3"/>  
+  </dependency>  
+  <dependency id="7">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <dependency id="8">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="2"/>  
+  </dependency>  
+  <dependency id="9">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    sort-features="false" accessors="true" visibility="true">    
+    <attributes public="true" package="true" protected="true" private="true" static="true"/>    
+    <operations public="true" package="true" protected="true" private="true" static="true"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>
